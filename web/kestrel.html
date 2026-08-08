@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ICP Capture Kit · sample run for Kestrel</title>
+<meta name="description" content="A sample run of the ICP Capture Kit. One domain in, real assets extracted, prospects found in that ICP, and a tailored five-email sequence written per person."/>
+<meta property="og:title" content="ICP Capture Kit — a sample run"/>
+<meta property="og:description" content="One domain in. Real assets out, prospects in that ICP, and a tailored sequence written for each of them."/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="https://plan90.fareehafatima.com/og-kit.jpg"/>
+<meta property="og:url" content="https://kit.fareehafatima.com/kestrel"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<style>
+  :root{--ink:#12100E;--ink2:#1B1815;--card:#1E1A16;--line:#332C25;--cream:#FAF7F2;
+    --muted:#A79C90;--accent:#E8531A;--accent2:#FF7A45;--ok:#4ADE80}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--cream);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;line-height:1.55}
+  .banner{background:var(--accent);color:#fff;font-weight:600;font-size:13.5px;padding:11px 18px;text-align:center}
+  .banner a{color:#fff}
+  .wrap{max-width:900px;margin:0 auto;padding:44px 22px 90px}
+  .kicker{color:var(--accent);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+  h1{font-size:clamp(26px,4.5vw,40px);line-height:1.1;margin:.35em 0 .3em;font-weight:800}
+  .sub{color:var(--muted);font-size:16px;max-width:660px}
+  .h2{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:40px 0 16px}
+
+  .bar{display:flex;gap:0;align-items:stretch;margin:26px 0 8px}
+  .stage{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 12px;text-align:center}
+  .stage .d{color:var(--accent);font-weight:800;font-size:12px;letter-spacing:.08em}
+  .stage .t{font-weight:700;font-size:14px;margin-top:4px;line-height:1.25}
+  .arrow{display:flex;align-items:center;padding:0 5px;color:var(--accent);flex:none;font-size:18px}
+  @media(max-width:680px){.bar{flex-direction:column}.arrow{justify-content:center;transform:rotate(90deg);padding:3px 0}}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+  .box{background:var(--ink2);border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+  .box .lbl{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+  .box p{margin:.4em 0 0;font-size:14px;color:#E9E0D6}
+  .box ul{margin:.45em 0 0;padding-left:17px;color:#DBD2C7;font-size:14px}
+  .box li{margin:4px 0}
+
+  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
+  th{text-align:left;color:var(--accent);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:10px;border-bottom:1px solid var(--line);color:#DBD2C7}
+  td b{color:var(--cream)}
+
+  .mail{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:12px;padding:16px 18px;margin:10px 0}
+  .mail .step{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+  .mail .subj{font-weight:700;margin:5px 0 8px;font-size:15px}
+  .mail p{margin:0 0 9px;font-size:14.5px;color:#E9E0D6}
+  .mail p:last-child{margin-bottom:0}
+
+  .rule{background:var(--ink2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+  .rule p{margin:0 0 9px;font-size:14.5px;color:#E9E0D6}
+  .rule p:last-child{margin-bottom:0}
+
+  .cta{margin-top:44px;background:linear-gradient(145deg,#2a2017,#1c1713);border:1px solid var(--line);
+    border-radius:16px;padding:26px;text-align:center}
+  .cta h3{margin:0 0 .35em;font-size:20px}
+  .cta p{color:#DBD2C7;margin:.2em 0 16px}
+  .btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;
+    padding:13px 26px;border-radius:11px}
+  .btn:hover{background:var(--accent2)}
+  a{color:var(--accent2)}
+  .foot{color:var(--muted);font-size:12.5px;margin-top:34px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  Sample run. Kestrel is a company that does not exist, and the people below are invented.
+  Real runs use a company&rsquo;s own published assets and live prospect data.
+  &nbsp;<a href="https://calendly.com/hifareeha/discovery-meeting-with-fareeha">See it on your domain</a>
+</div>
+
+<div class="wrap">
+
+  <div class="kicker">ICP Capture Kit</div>
+  <h1>One domain in. A working outbound plan out.</h1>
+  <p class="sub">Someone types <b>kestrel.io</b> and presses go. Everything below is what comes back,
+  built only from what the company has actually published. Nothing is invented, and that rule is
+  enforced in the code rather than left to good intentions.</p>
+
+  <div class="bar">
+    <div class="stage"><div class="d">1</div><div class="t">Read the site</div></div>
+    <div class="arrow">&rarr;</div>
+    <div class="stage"><div class="d">2</div><div class="t">Extract real assets</div></div>
+    <div class="arrow">&rarr;</div>
+    <div class="stage"><div class="d">3</div><div class="t">Find prospects in that ICP</div></div>
+    <div class="arrow">&rarr;</div>
+    <div class="stage"><div class="d">4</div><div class="t">Write a sequence each</div></div>
+  </div>
+
+  <div class="h2">Step 2 · What it pulled off the site</div>
+  <div class="grid">
+    <div class="box">
+      <div class="lbl">Product</div>
+      <p>Continuous compliance monitoring for mid-market fintechs. Connects to core systems and
+      flags control failures before an audit does.</p>
+    </div>
+    <div class="box">
+      <div class="lbl">Ideal customer</div>
+      <p>Fintechs with 50 to 500 staff carrying regulator exposure, where compliance sits with a
+      small team rather than a department.</p>
+    </div>
+    <div class="box">
+      <div class="lbl">Named customers</div>
+      <ul><li>Halden Pay</li><li>Corvid Bank</li><li>Onwardly</li></ul>
+    </div>
+    <div class="box">
+      <div class="lbl">Case studies found</div>
+      <ul><li>Halden Pay: audit prep cut from 6 weeks to 9 days</li><li>Onwardly: 40 controls monitored continuously</li></ul>
+    </div>
+    <div class="box">
+      <div class="lbl">Lead magnet</div>
+      <p>&ldquo;The mid-market fintech audit checklist&rdquo;, gated PDF on the resources page.</p>
+    </div>
+    <div class="box">
+      <div class="lbl">Free trial</div>
+      <p>14 days, no card, at kestrel.io/start</p>
+    </div>
+  </div>
+
+  <div class="h2">Step 3 · Prospects it found in that ICP</div>
+  <table>
+    <tr><th>Name</th><th>Title</th><th>Company</th><th>Why they matched</th></tr>
+    <tr><td><b>Priya Raman</b></td><td>Head of Compliance</td><td>Latchford</td><td>Hiring a compliance analyst, 120 staff</td></tr>
+    <tr><td><b>Tomas Herrera</b></td><td>COO</td><td>Bellweather Pay</td><td>New e-money licence announced</td></tr>
+    <tr><td><b>Aoife Brennan</b></td><td>VP Risk</td><td>Sundial Finance</td><td>Series B, expanding into two new markets</td></tr>
+    <tr><td><b>Marcus Ide</b></td><td>Head of Ops</td><td>Northgate Credit</td><td>Compliance owned by ops, no dedicated hire</td></tr>
+    <tr><td><b>Lena Fischer</b></td><td>Chief Risk Officer</td><td>Ostwald Bank</td><td>Regulator exposure across three jurisdictions</td></tr>
+  </table>
+  <p class="sub" style="margin-top:12px">Kestrel&rsquo;s own named customers are filtered out, so you
+  never pitch a company back to itself.</p>
+
+  <div class="h2">Step 4 · The sequence written for Priya</div>
+
+  <div class="mail">
+    <div class="step">Email 1 · day 0</div>
+    <div class="subj">the nine-day audit</div>
+    <p>Hi Priya, I saw Latchford is hiring a compliance analyst, which usually means the current
+    team is covering more surface than it comfortably can.</p>
+    <p>Kestrel cut audit prep at Halden Pay from six weeks to nine days by monitoring controls
+    continuously instead of reconstructing them before a review.</p>
+    <p>Worth a look, or is audit prep not the part that hurts?</p>
+  </div>
+
+  <div class="mail">
+    <div class="step">Email 2 · day 3</div>
+    <div class="subj">no reply needed</div>
+    <p>Hi Priya, no reply needed on this one. Kestrel publishes a checklist for mid-market fintech
+    audits and it maps closely to what a team your size gets asked for.</p>
+    <p>kestrel.io/resources. Useful whether or not you ever talk to us.</p>
+  </div>
+
+  <div class="mail">
+    <div class="step">Email 3 · day 7</div>
+    <div class="subj">40 controls, continuously</div>
+    <p>Hi Priya, one more concrete thing. Onwardly runs 40 controls under continuous monitoring
+    with a compliance team of two.</p>
+    <p>The trial is 14 days and does not need a card: kestrel.io/start</p>
+  </div>
+
+  <div class="mail">
+    <div class="step">Email 4 · day 12</div>
+    <div class="subj">the honest version</div>
+    <p>Hi Priya, if compliance at Latchford is already handled, say so and I will stop.</p>
+    <p>If it is handled by three people and a spreadsheet, that is the situation Kestrel was built
+    for, and fifteen minutes would tell you whether it fits.</p>
+  </div>
+
+  <div class="mail">
+    <div class="step">Email 5 · day 16</div>
+    <div class="subj">closing the loop</div>
+    <p>Hi Priya, closing the loop so I do not become inbox clutter.</p>
+    <p>If the timing is wrong, that is fine. The audit checklist is still there, and my door is open
+    whenever the analyst hire lands.</p>
+  </div>
+
+  <div class="h2">The rules it works under</div>
+  <div class="rule">
+    <p><b>Never invent a customer, a case study, or a result.</b> Every claim above traces to
+    something published on the company&rsquo;s own site.</p>
+    <p><b>Never pitch a company its own customers.</b> They are filtered out before prospecting.</p>
+    <p><b>60 to 90 words, one concrete detail, one soft ask.</b> No jargon, no exclamation marks,
+    no fake urgency.</p>
+  </div>
+
+  <div class="cta">
+    <h3>Want to see this run on your domain?</h3>
+    <p>Twenty minutes, no slides. I will run it live against your site and you keep the output.</p>
+    <a class="btn" href="https://calendly.com/hifareeha/discovery-meeting-with-fareeha">Book a time</a>
+  </div>
+
+  <div class="foot">
+    Built by Fareeha Fatima · <a href="mailto:hello@fareehafatima.com">hello@fareehafatima.com</a>
+  </div>
+
+</div>
+</body>
+</html>

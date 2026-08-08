@@ -2,6 +2,7 @@
 ICP Capture Kit server v3.
 
   GET  /              -> the page
+  GET  /kestrel       -> public sample run (static, no model or Apollo calls)
   POST /api/analyze   -> {domain, force} -> {slug, assets, market{prospects...}}
                          Fast half: scrape + assets + prospects, no sequences.
                          Once-per-domain: if a stored kit exists, returns its share_url.
@@ -54,6 +55,16 @@ class ShareReq(BaseModel):
 def home():
     html = (HERE / "web" / "index.html").read_text(encoding="utf-8")
     # no-store so a new deploy's UI is served immediately instead of a stale copy.
+    return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+
+@app.get("/kestrel", response_class=HTMLResponse)
+def sample():
+    """Public sample run, safe to link anywhere (LinkedIn featured, email, deck).
+
+    Fully static: no scrape, no Claude call, no Apollo call, so linking it
+    publicly cannot burn credits. Kestrel is a made-up company and the prospects
+    on the page are invented; the page says so at the top."""
+    html = (HERE / "web" / "kestrel.html").read_text(encoding="utf-8")
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 @app.post("/api/analyze")
