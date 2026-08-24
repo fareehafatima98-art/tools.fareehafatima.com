@@ -6,11 +6,6 @@ BLOCKED with the exact error. Commit this file with your changes.
 
 ## INBOX
 
-- [ ] (STRUCTURAL, so repairs are never manual again) Persist the kit JSON alongside the
-      share page: /api/share also stores kits/kit-<slug>.json in Blob; add GET
-      /api/kit/{slug} returning it; front-end + repairs can then resume/complete a partial
-      kit without re-running analyze. Small, high-value.
-
 - [ ] (Fareeha, THE ONLY THING BLOCKING TRACKING) `git push origin main` from your Terminal.
       Unpushed: 35fac2a (unreadable-site guard + scrape fallback), 9f07d8c (analytics snippet +
       the /_vercel rewrite fix + share guard), plus the quote/statistics rule and log commits.
