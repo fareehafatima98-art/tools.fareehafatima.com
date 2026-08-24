@@ -1,6 +1,7 @@
 """
-ICP Capture Kit server v3.
+ICP Capture Kit server v3 + Tools Portal.
 
+PUBLIC ROUTES:
   GET  /              -> the page
   GET  /kestrel       -> public sample run (static, no model or Apollo calls)
   POST /api/analyze   -> {domain, force} -> {slug, assets, market{prospects...}}
@@ -13,19 +14,27 @@ ICP Capture Kit server v3.
                          may exceed a 60s serverless cap, which is why the UI uses the split).
   GET  /k/{slug}      -> redirects to the stored share page for a domain
 
+TOOLS PORTAL (password-gated):
+  GET  /login         -> login form
+  POST /login         -> password check, sets auth cookie
+  GET  /tools         -> dashboard (Kit 25, Plan 90, Offer Review)
+  GET  /tools/review  -> Offer Review form
+  POST /api/review    -> {domain, first_name, last_name, company, force} -> review JSON + URLs
+
 The API is split into analyze + per-prospect sequence + share so that NO single
 request runs all five Claude sequence calls, which pushed the combined run past
 Vercel's 60s function cap.
 
 Env: ANTHROPIC_API_KEY, APOLLO_API_KEY, APOLLO_ENRICH=1,
-     BLOB_READ_WRITE_TOKEN (auto-added when you enable Blob storage on Vercel).
+     BLOB_READ_WRITE_TOKEN (auto-added when you enable Blob storage on Vercel),
+     TOOLS_PASSWORD, TOOLS_SECRET (for password-gated tools portal).
 """
-import re, pathlib
-from typing import Any, Dict, List
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse
+import re, pathlib, json
+from typing import Any, Dict, List, Optional
+from fastapi import FastAPI, Request, Form, Cookie
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from pydantic import BaseModel
-import capture, storage, report_html
+import capture, storage, report_html, auth, review
 
 HERE = pathlib.Path(__file__).resolve().parent
 app = FastAPI(title="ICP Capture Kit")
@@ -163,3 +172,129 @@ def share(slug: str):
             html = html.replace("</head>", report_html.ANALYTICS + "</head>", 1)
         return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
     return JSONResponse({"error": "no kit found for that domain"}, status_code=404)
+
+# ---------------------------------------------------------------- Tools Portal
+
+def _check_auth(request: Request) -> bool:
+    """Check if user is authenticated via cookie. Returns True if valid."""
+    cookies = request.cookies
+    return auth.is_authenticated(cookies)
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request, error: Optional[str] = None):
+    """Login form for tools portal."""
+    if _check_auth(request):
+        return RedirectResponse("/tools", status_code=302)
+
+    html = (HERE / "web" / "login.html").read_text(encoding="utf-8")
+    if error:
+        html = html.replace("<!-- ERROR -->", f'<p class="error">{error}</p>')
+    return HTMLResponse(html, headers={
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex"
+    })
+
+@app.post("/login")
+async def login_submit(request: Request, password: str = Form(...)):
+    """Check password and set auth cookie."""
+    if auth.verify_password(password):
+        cookie_name, cookie_value = auth.make_auth_cookie()
+        response = RedirectResponse("/tools", status_code=302)
+        response.set_cookie(
+            key=cookie_name,
+            value=cookie_value,
+            max_age=auth.COOKIE_MAX_AGE,
+            httponly=True,
+            samesite="lax"
+        )
+        return response
+    else:
+        return RedirectResponse("/login?error=incorrect", status_code=302)
+
+@app.get("/tools", response_class=HTMLResponse)
+def tools_dashboard(request: Request):
+    """Dashboard with cards for Kit 25, Plan 90, and Offer Review."""
+    if not _check_auth(request):
+        return RedirectResponse("/login", status_code=302)
+
+    html = (HERE / "web" / "tools" / "index.html").read_text(encoding="utf-8")
+    return HTMLResponse(html, headers={
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex"
+    })
+
+@app.get("/tools/review", response_class=HTMLResponse)
+def review_form(request: Request):
+    """Offer Review tool form."""
+    if not _check_auth(request):
+        return RedirectResponse("/login", status_code=302)
+
+    html = (HERE / "web" / "tools" / "review.html").read_text(encoding="utf-8")
+    return HTMLResponse(html, headers={
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex"
+    })
+
+class ReviewReq(BaseModel):
+    domain: str
+    first_name: str = ""
+    last_name: str = ""
+    company: str = ""
+    force: bool = False
+
+@app.post("/api/review")
+def generate_offer_review(request: Request, req: ReviewReq):
+    """Generate an offer review. Auth required."""
+    if not _check_auth(request):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+
+    slug = review.slugify(req.company or req.domain)
+
+    # Once-per-domain: serve stored unless force=true
+    if not req.force:
+        stored = storage.fetch_review(slug)
+        if stored:
+            blob_url = f"https://gzbaq0nk2iyh6nku.public.blob.vercel-storage.com/reviews/{slug}.json"
+            return JSONResponse({
+                "cached": True,
+                "slug": slug,
+                "review": stored,
+                "blob_url": blob_url,
+                "page_url": f"https://fareehafatima.co/review?c={slug}"
+            })
+
+    try:
+        # Generate review
+        review_data = review.generate_review(
+            domain=req.domain,
+            first_name=req.first_name,
+            last_name=req.last_name,
+            company=req.company
+        )
+
+        # Store in Blob
+        if not storage.enabled():
+            return JSONResponse({
+                "error": "blob storage not enabled (BLOB_READ_WRITE_TOKEN missing)"
+            }, status_code=500)
+
+        success = storage.save_review(slug, review_data)
+        if not success:
+            return JSONResponse({
+                "error": f"failed to store review: {storage.last_error()}"
+            }, status_code=500)
+
+        blob_url = f"https://gzbaq0nk2iyh6nku.public.blob.vercel-storage.com/reviews/{slug}.json"
+
+        return JSONResponse({
+            "cached": False,
+            "slug": slug,
+            "review": review_data,
+            "blob_url": blob_url,
+            "page_url": f"https://fareehafatima.co/review?c={slug}"
+        })
+
+    except review.ReviewError as e:
+        return JSONResponse({"error": str(e)}, status_code=422)
+    except Exception as e:
+        return JSONResponse({"error": str(e) or e.__class__.__name__}, status_code=500)

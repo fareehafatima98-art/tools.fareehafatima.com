@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>Offer Review — Tools Portal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--ink:#111210;--paper:#f3f0e9;--acid:#d7ff3f;--signal:#ff5b36;--muted:#77766f;
+  --line:rgba(17,18,16,.16);--rail:#262723;--dim:#c6c7c0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Manrope,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{width:min(780px,calc(100% - 40px));margin:0 auto;padding:40px 0 90px}
+.eyebrow{font:500 11px/1.2 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+h1{font-size:clamp(28px,4.8vw,38px);line-height:1.1;margin:0 0 12px;font-weight:800}
+.sub{color:var(--muted);font-size:15px;margin-bottom:32px;line-height:1.55}
+.back{display:inline-block;color:var(--muted);font-size:13px;text-decoration:none;margin-bottom:24px;transition:.2s}
+.back:hover{color:var(--ink)}
+.form{background:white;border:1px solid var(--line);border-radius:14px;padding:32px 28px}
+.field{margin-bottom:20px}
+.field:last-of-type{margin-bottom:0}
+label{display:block;font:500 12px 'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+input[type="text"]{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px 13px;font-size:15px;font-family:inherit;transition:.2s}
+input[type="text"]:focus{outline:none;border-color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+.hint{color:var(--muted);font-size:12px;margin-top:6px}
+.check{display:flex;align-items:center;gap:8px;margin-top:20px}
+.check input{width:16px;height:16px}
+.check label{margin:0;text-transform:none;font:14px Manrope,sans-serif;color:var(--ink);letter-spacing:0}
+.actions{display:flex;gap:12px;margin-top:28px;align-items:center}
+button{background:var(--ink);color:var(--paper);border:0;border-radius:8px;padding:13px 24px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s}
+button:hover{background:var(--rail)}
+button:disabled{opacity:.4;cursor:default}
+.cancel{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.cancel:hover{color:var(--ink);border-color:var(--ink);background:transparent}
+#status{display:none;margin-top:24px;padding:16px 18px;border-radius:12px;font-size:14px}
+#status.pending{background:#fffbeb;border:1px solid #fcd34d;color:#78350f}
+#status.error{background:#fff5f5;border:1px solid rgba(255,91,54,.2);color:var(--signal)}
+#status.success{background:#f0fdf4;border:1px solid #86efac;color:#14532d}
+#result{display:none;margin-top:28px}
+.box{background:white;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.box h3{font-size:14px;font-weight:600;color:var(--muted);margin:0 0 8px;text-transform:uppercase;letter-spacing:.08em}
+.box p{margin:0;font-size:14px;line-height:1.6}
+.box a{color:var(--ink);font-weight:600;text-decoration:none;border-bottom:1px solid var(--line)}
+.box a:hover{border-color:var(--ink)}
+.scores{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
+.score{background:white;border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.score .lbl{font-size:12px;color:var(--muted)}
+.score .val{font:700 18px 'DM Mono',monospace;color:var(--ink)}
+.score.low{border-color:rgba(255,91,54,.3);background:#fff9f7}
+.score.low .val{color:var(--signal)}
+.sugg{background:white;border:1px solid var(--line);border-left:3px solid var(--signal);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.sugg h4{font-size:15px;font-weight:700;margin:0 0 8px}
+.sugg p{margin:0;color:var(--muted);font-size:14px;line-height:1.6}
+.foot{color:var(--muted);font-size:12px;margin-top:48px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/tools" class="back">← Back to tools</a>
+  <div class="eyebrow">Offer Review Tool</div>
+  <h1>Generate Offer Review</h1>
+  <p class="sub">Score a B2B company's offer against 10 criteria (Grand Slam Offer rubric merged with cold-outreach realities). Returns the review JSON, a public blob URL, and the recipient-facing page link.</p>
+
+  <div class="form">
+    <div class="field">
+      <label for="domain">Company Domain *</label>
+      <input type="text" id="domain" placeholder="example.com" required/>
+      <div class="hint">The agent will scrape up to 5 pages (homepage, /pricing, /product, /customers, etc.)</div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="first_name">First Name</label>
+        <input type="text" id="first_name" placeholder="Clayton"/>
+      </div>
+      <div class="field">
+        <label for="last_name">Last Name</label>
+        <input type="text" id="last_name" placeholder="Ramnarine"/>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="company">Company Name</label>
+      <input type="text" id="company" placeholder="Optional — defaults from domain"/>
+      <div class="hint">Override if the domain doesn't match the brand name</div>
+    </div>
+
+    <div class="check">
+      <input type="checkbox" id="force"/>
+      <label for="force">Force regenerate (ignore existing review for this domain)</label>
+    </div>
+
+    <div class="actions">
+      <button id="submit" onclick="run()">Generate Review</button>
+      <button class="cancel" onclick="location.href='/tools'">Cancel</button>
+    </div>
+  </div>
+
+  <div id="status"></div>
+  <div id="result"></div>
+
+  <p class="foot">Fareeha Fatima · fareehafatima.co · hello@fareehafatima.com</p>
+</div>
+
+<script>
+function status(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = type;
+  el.style.display = 'block';
+}
+
+function showResult(data) {
+  const r = data.review;
+  const scores = r._scores || {};
+  const notes = r._notes || {};
+  const sugg = r.suggestions || [];
+
+  // Find lowest two scores
+  const sorted = Object.entries(scores).map(([k,v]) => ({k,v})).sort((a,b) => a.v - b.v);
+  const lowSet = new Set(sorted.slice(0,2).map(x => x.k));
+
+  const CRITERIA = ['Dream outcome','Likelihood','Speed to value','Effort and sacrifice','Risk reversal',
+    'Specific outcome','Cost vs value','Proof and differentiation','Offer clarity','Urgency'];
+
+  let scoresHTML = Object.entries(scores).map(([k,v]) => {
+    const low = lowSet.has(k);
+    return `<div class="score ${low?'low':''}">
+      <span class="lbl">${CRITERIA[parseInt(k)-1]}</span>
+      <span class="val">${v}</span>
+    </div>`;
+  }).join('');
+
+  let sugHTML = sugg.map((s,i) =>
+    `<div class="sugg">
+      <h4>${i+1}. ${esc(s.title)}</h4>
+      <p>${esc(s.body)}</p>
+    </div>`
+  ).join('');
+
+  document.getElementById('result').innerHTML = `
+    <div class="box">
+      <h3>Generated</h3>
+      <p><strong>${esc(r.company)}</strong> · ${r.generated}</p>
+    </div>
+    <div class="scores">${scoresHTML}</div>
+    ${sugHTML}
+    <div class="box">
+      <h3>Public URLs</h3>
+      <p><strong>Blob JSON:</strong> <a href="${esc(data.blob_url)}" target="_blank">${esc(data.blob_url)}</a></p>
+      <p style="margin-top:8px"><strong>Recipient page:</strong> <a href="${esc(data.page_url)}" target="_blank">${esc(data.page_url)}</a></p>
+    </div>
+  `;
+  document.getElementById('result').style.display = 'block';
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function run() {
+  const domain = document.getElementById('domain').value.trim();
+  if (!domain) {
+    status('Domain is required', 'error');
+    return;
+  }
+
+  const first_name = document.getElementById('first_name').value.trim();
+  const last_name = document.getElementById('last_name').value.trim();
+  const company = document.getElementById('company').value.trim();
+  const force = document.getElementById('force').checked;
+
+  const btn = document.getElementById('submit');
+  btn.disabled = true;
+  document.getElementById('result').style.display = 'none';
+  status('Generating review... (scraping site, extracting offer, scoring with Claude)', 'pending');
+
+  try {
+    const res = await fetch('/api/review', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({domain, first_name, last_name, company, force})
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      status(data.error || 'Request failed', 'error');
+      btn.disabled = false;
+      return;
+    }
+
+    if (data.cached) {
+      status('Review already exists for this domain (using stored version)', 'success');
+    } else {
+      status('Review generated successfully', 'success');
+    }
+
+    showResult(data);
+  } catch (e) {
+    status('Network error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// Enter to submit
+document.getElementById('domain').addEventListener('keydown', e => {
+  if (e.key === 'Enter') run();
+});
+</script>
+</body>
+</html>

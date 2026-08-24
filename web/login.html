@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>Login — Tools Portal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--ink:#111210;--paper:#f3f0e9;--acid:#d7ff3f;--signal:#ff5b36;--muted:#77766f;--line:rgba(17,18,16,.16)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:Manrope,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;display:grid;place-items:center;min-height:100vh;padding:20px}
+.card{background:white;border:1px solid var(--line);border-radius:12px;padding:40px 32px;
+  max-width:380px;width:100%}
+h1{font-size:26px;font-weight:700;margin-bottom:8px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:28px}
+label{display:block;font:500 12px 'DM Mono',monospace;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+input[type="password"]{width:100%;border:1px solid var(--line);border-radius:8px;
+  padding:12px 14px;font-size:15px;font-family:inherit;transition:.2s}
+input[type="password"]:focus{outline:none;border-color:var(--ink)}
+button{width:100%;background:var(--ink);color:var(--paper);border:0;border-radius:8px;
+  padding:14px;font-size:15px;font-weight:700;margin-top:16px;cursor:pointer;transition:.2s}
+button:hover{background:#262723}
+.error{color:var(--signal);font-size:13px;margin-top:12px;padding:10px 12px;
+  background:#fff5f5;border:1px solid rgba(255,91,54,.2);border-radius:6px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Tools Portal</h1>
+  <p class="sub">Enter password to access Fareeha's internal tools</p>
+  <!-- ERROR -->
+  <form method="post" action="/login">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" required autofocus/>
+    <button type="submit">Sign In</button>
+  </form>
+</div>
+</body>
+</html>

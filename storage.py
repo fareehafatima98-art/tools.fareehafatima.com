@@ -1,5 +1,5 @@
 """
-Vercel Blob storage for shareable kit pages + once-per-domain limiting.
+Vercel Blob storage for shareable kit pages + offer reviews + once-per-domain limiting.
 
 Setup (one time, in Vercel dashboard):
   Project -> Storage -> Create -> Blob. Vercel auto-adds BLOB_READ_WRITE_TOKEN
@@ -8,6 +8,10 @@ Setup (one time, in Vercel dashboard):
 Every generated kit is stored as kits/kit-<slug>.html at a public URL. That URL is
 the shareable link AND the cache: if a kit already exists for a domain, we serve the
 stored one instead of re-running (the once-per-domain limit, durable).
+
+Offer reviews are stored as reviews/<slug>.json (public). The recipient-facing page
+at fareehafatima.co/review?c=<slug> tries local static files first, then falls back
+to the Blob URL, so portal-generated reviews are live instantly with no redeploy.
 
 Errors are captured (not swallowed) in last_error() so the API can report exactly
 why a share link could not be produced.
@@ -99,3 +103,48 @@ def save_kit(slug, html):
         return url
     except Exception as e:
         return _capture("save_kit", e)
+
+# ---------------------------------------------------------------- reviews
+
+def fetch_review(slug):
+    """Fetch stored review JSON by slug, or None if not found."""
+    global _LAST_ERROR
+    _LAST_ERROR = None
+    if not enabled():
+        _LAST_ERROR = "BLOB_READ_WRITE_TOKEN not set at runtime"
+        return None
+    try:
+        r = _req(f"{API}?prefix=reviews/{slug}.json&limit=1")
+        blobs = r.get("blobs") or []
+        if not blobs:
+            return None
+        url = blobs[0]["url"]
+        # fetch the JSON
+        with urllib.request.urlopen(urllib.request.Request(url), timeout=15) as resp:
+            return json.loads(resp.read().decode("utf-8", "ignore"))
+    except Exception as e:
+        return _capture("fetch_review", e)
+
+def save_review(slug, review_data):
+    """Upload review JSON to reviews/<slug>.json; returns True on success."""
+    global _LAST_ERROR
+    _LAST_ERROR = None
+    if not enabled():
+        _LAST_ERROR = "BLOB_READ_WRITE_TOKEN not set at runtime"
+        return False
+    try:
+        payload = json.dumps(review_data, indent=2, ensure_ascii=False).encode("utf-8")
+        r = _req(f"{API}/reviews/{slug}.json", method="PUT",
+                 data=payload,
+                 headers={"content-type": "application/json; charset=utf-8",
+                          "x-content-type": "application/json; charset=utf-8",
+                          "x-add-random-suffix": "0",
+                          "x-allow-overwrite": "1"})
+        url = r.get("url")
+        if not url:
+            _LAST_ERROR = f"save_review: no url in Blob response: {json.dumps(r)[:400]}"
+            return False
+        return True
+    except Exception as e:
+        _capture("save_review", e)
+        return False
