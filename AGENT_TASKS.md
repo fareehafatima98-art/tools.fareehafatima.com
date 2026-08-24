@@ -37,6 +37,11 @@ BLOCKED with the exact error. Commit this file with your changes.
 
 ## DONE
 
+- [x] (Claude Code 24 Aug) KIT JSON PERSISTENCE complete, commit fadb14b. /api/share and /api/capture
+      now store BOTH kit-<slug>.html and kit-<slug>.json in Blob. New GET /api/kit/{slug} returns
+      the stored JSON. Added storage.fetch_kit_json() and save_kit_json(). JSON save failure is
+      non-fatal (logged as json_warning). Enables repairs and resuming incomplete kits without
+      re-running analyze. Files: app.py, storage.py.
 - [x] (Claude Code 24 Aug) TOOLS PORTAL COMPLETE, commit 9841fbf. Files: auth.py (password check +
       HMAC cookies), review.py (scrape → Haiku extract → Sonnet score pipeline, ported from
       generate_reviews.py), app.py (+/login, /tools, /tools/review, /api/review routes),
