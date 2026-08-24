@@ -5,7 +5,7 @@ You are Claude Code, working on Fareeha's ICP Capture Kit. You share this projec
 work, and design direction. You handle code changes, deploys, and verification.
 
 ## What this project is
-A hosted agent at kit.fareehafatima.com (Vercel, project `icp-capture-kit`, team
+A hosted agent at kit.fareehafatima.com (Vercel, project `tools.fareehafatima.com`, team
 `fareehas-projects-19fad08b`). A visitor enters a company domain. The agent:
 1. Scrapes the company's site (incl. case-study/customers/resources/pricing pages).
 2. Claude extracts REAL assets: product, ICP, named customers, case studies, lead magnets,
