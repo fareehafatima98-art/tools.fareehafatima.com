@@ -9,10 +9,11 @@ PUBLIC ROUTES:
                          Once-per-domain: if a stored kit exists, returns its share_url.
   POST /api/sequence  -> {assets, prospect} -> one prospect's kit {prospect, about, emails}
                          The front-end calls this once per prospect, in parallel.
-  POST /api/share     -> {kit} -> renders + stores the share page, returns {share_url}
+  POST /api/share     -> {kit} -> renders + stores the share page AND kit JSON, returns {share_url}
   POST /api/capture   -> {domain, force} -> whole kit in one call (CLI/back-compat only;
                          may exceed a 60s serverless cap, which is why the UI uses the split).
-  GET  /k/{slug}      -> redirects to the stored share page for a domain
+  GET  /k/{slug}      -> serve the stored share page for a domain (inline HTML)
+  GET  /api/kit/{slug} -> retrieve the stored kit JSON (for repairs, resuming incomplete kits)
 
 TOOLS PORTAL (password-gated):
   GET  /login         -> login form
@@ -124,12 +125,19 @@ def share_page(req: ShareReq):
             return JSONResponse({"share_url": None, "slug": kit["slug"],
                                  "share_error": "blob storage not enabled "
                                  "(BLOB_READ_WRITE_TOKEN missing at runtime)"})
+
+        # Store both the HTML share page AND the kit JSON (so repairs can resume)
         share = storage.save_kit(kit["slug"], report_html.render(kit))
+        json_saved = storage.save_kit_json(kit["slug"], kit)
+
         # Return the /k/<slug> path on our domain (renders inline) rather than
         # the raw blob URL (which downloads as an attachment).
         out = {"share_url": ("/k/" + kit["slug"]) if share else None, "slug": kit["slug"]}
         if not share:
             out["share_error"] = storage.last_error()
+        elif not json_saved:
+            # HTML saved but JSON didn't - not fatal, just log it
+            out["json_warning"] = storage.last_error()
         return JSONResponse(out)
     except (Exception, SystemExit) as e:
         return JSONResponse({"error": str(e) or e.__class__.__name__}, status_code=500)
@@ -147,6 +155,7 @@ def make(req: DomainReq):
         share = None
         if storage.enabled():
             share = storage.save_kit(kit["slug"], report_html.render(kit))
+            storage.save_kit_json(kit["slug"], kit)  # also persist the JSON
         kit["share_url"] = ("/k/" + kit["slug"]) if share else None
         if not share:
             kit["share_error"] = (storage.last_error() if storage.enabled()
@@ -172,6 +181,16 @@ def share(slug: str):
             html = html.replace("</head>", report_html.ANALYTICS + "</head>", 1)
         return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
     return JSONResponse({"error": "no kit found for that domain"}, status_code=404)
+
+@app.get("/api/kit/{slug}")
+def get_kit_json(slug: str):
+    """Retrieve the stored kit JSON for a domain. Useful for repairs and resuming
+    incomplete kits without re-running analyze."""
+    clean_slug = re.sub(r"[^a-z0-9]", "", slug.lower())
+    kit_data = storage.fetch_kit_json(clean_slug)
+    if kit_data:
+        return JSONResponse(kit_data)
+    return JSONResponse({"error": "no kit JSON found for that slug"}, status_code=404)
 
 # ---------------------------------------------------------------- Tools Portal
 

@@ -148,3 +148,48 @@ def save_review(slug, review_data):
     except Exception as e:
         _capture("save_review", e)
         return False
+
+# ---------------------------------------------------------------- kit JSON
+
+def fetch_kit_json(slug):
+    """Fetch stored kit JSON by slug, or None if not found."""
+    global _LAST_ERROR
+    _LAST_ERROR = None
+    if not enabled():
+        _LAST_ERROR = "BLOB_READ_WRITE_TOKEN not set at runtime"
+        return None
+    try:
+        r = _req(f"{API}?prefix=kits/kit-{slug}.json&limit=1")
+        blobs = r.get("blobs") or []
+        if not blobs:
+            return None
+        url = blobs[0]["url"]
+        # fetch the JSON
+        with urllib.request.urlopen(urllib.request.Request(url), timeout=15) as resp:
+            return json.loads(resp.read().decode("utf-8", "ignore"))
+    except Exception as e:
+        return _capture("fetch_kit_json", e)
+
+def save_kit_json(slug, kit_data):
+    """Upload kit JSON to kits/kit-<slug>.json; returns True on success."""
+    global _LAST_ERROR
+    _LAST_ERROR = None
+    if not enabled():
+        _LAST_ERROR = "BLOB_READ_WRITE_TOKEN not set at runtime"
+        return False
+    try:
+        payload = json.dumps(kit_data, indent=2, ensure_ascii=False).encode("utf-8")
+        r = _req(f"{API}/kits/kit-{slug}.json", method="PUT",
+                 data=payload,
+                 headers={"content-type": "application/json; charset=utf-8",
+                          "x-content-type": "application/json; charset=utf-8",
+                          "x-add-random-suffix": "0",
+                          "x-allow-overwrite": "1"})
+        url = r.get("url")
+        if not url:
+            _LAST_ERROR = f"save_kit_json: no url in Blob response: {json.dumps(r)[:400]}"
+            return False
+        return True
+    except Exception as e:
+        _capture("save_kit_json", e)
+        return False
