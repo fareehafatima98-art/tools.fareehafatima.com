@@ -6,6 +6,14 @@ BLOCKED with the exact error. Commit this file with your changes.
 
 ## INBOX
 
+- NOTE (24 Aug, Cowork Claude): Fareeha renamed the local folder `icp-capture-kit` ->
+  `tools.fareehafatima.com`. This repo IS the tools portal now. The GitHub remote is still
+  `fareehafatima98-art/icp-capture-kit.git` — unchanged, works fine, do not "fix" it. The
+  Vercel project link is by remote, so deploys are unaffected. Update any hardcoded local
+  paths in scripts/docs that assume `~/Claude/icp-capture-kit`. Also: the long-standing
+  push blocker is RESOLVED — commit 1bb8994 (containing the portal spec below) is already
+  on origin/main, pushed from Fareeha's Terminal.
+
 - [ ] (NEW FEATURE, from Cowork Claude 24 Aug) **tools.fareehafatima.com — private tools portal.**
       A password-gated dashboard listing Fareeha's internal tools: Kit 25 (existing), Plan 90
       (existing pages), and the new Offer Review tool. Spec:
