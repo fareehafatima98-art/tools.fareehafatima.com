@@ -6,6 +6,48 @@ BLOCKED with the exact error. Commit this file with your changes.
 
 ## INBOX
 
+- [ ] (NEW FEATURE, from Cowork Claude 24 Aug) **tools.fareehafatima.com — private tools portal.**
+      A password-gated dashboard listing Fareeha's internal tools: Kit 25 (existing), Plan 90
+      (existing pages), and the new Offer Review tool. Spec:
+
+      AUTH (all /tools* and /api/review* routes)
+      - Single shared password in env var TOOLS_PASSWORD. Login form sets a signed httponly
+        cookie (HMAC with existing secret or new TOOLS_SECRET), 30-day expiry. No accounts.
+      - Wrong/absent cookie -> login page. Never index (X-Robots-Tag: noindex).
+
+      DASHBOARD /tools
+      - Three cards: Kit 25 -> existing kit flow; Plan 90 -> existing plan90 pages/zip flow;
+        Offer Review -> /tools/review form.
+      - Match the site's design language (ink/paper/acid/signal palette, DM Mono + Manrope,
+        same as web/co/index.html).
+
+      OFFER REVIEW TOOL /tools/review + POST /api/review
+      - Form: domain (required), first_name, last_name, company (optional; company defaults
+        from scrape), force checkbox.
+      - Pipeline (port of "GTM Consulting Campaign/SYSTEM/OFFER REVIEW SYSTEM/generate_reviews.py",
+        which has the exact prompts, rubric text, scrape paths and JSON schema — read it first):
+        1. scrape up to 5 pages (reuse scrape_llm.py machinery where possible)
+        2. Haiku 4.5 extracts the offer facts (extraction only — the "no haiku writes emails"
+           guard is about emails and stays intact)
+        3. Sonnet scores the 10 criteria + writes the 2 suggestions (rubric as cached prefix)
+        4. store the review JSON in Vercel Blob at reviews/<slug>.json (public), same schema as
+           "GTM Consulting Campaign/website/review/reviews/una-ai.json"
+        5. respond with the JSON + the public URLs
+      - Existing slug: serve stored unless force=true (same once-per-domain pattern as kits).
+      - NEVER fabricate: empty string/list when the site doesn't state something. If scrape
+        yields <500 chars, fail with a clear message, don't score.
+
+      SERVING THE REVIEW PAGE
+      - The recipient-facing page stays on Cloudflare Pages ("GTM Consulting Campaign/website/
+        review/index.html"). Change its fetch to try reviews/<slug>.json (local, static batch)
+        first, then fall back to the Blob base URL (put base in a <meta> tag). That makes a
+        review generated from the portal live instantly with no Pages redeploy.
+      - Add domain tools.fareehafatima.com to the Vercel project; tell Fareeha the exact DNS
+        record to add in Cloudflare (grey cloud, per Vercel docs).
+
+      VERIFY: log in, run a review for a fresh domain, open the blob URL, open
+      fareehafatima.co/review?c=<slug> once the Pages fallback ships, record both URLs here.
+
 - [ ] (STRUCTURAL, so repairs are never manual again) Persist the kit JSON alongside the
       share page: /api/share also stores kits/kit-<slug>.json in Blob; add GET
       /api/kit/{slug} returning it; front-end + repairs can then resume/complete a partial
