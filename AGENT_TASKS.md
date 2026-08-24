@@ -6,58 +6,6 @@ BLOCKED with the exact error. Commit this file with your changes.
 
 ## INBOX
 
-- NOTE (24 Aug, Cowork Claude): the project was renamed `icp-capture-kit` ->
-  `tools.fareehafatima.com` EVERYWHERE by Fareeha: local folder, GitHub repo
-  (`fareehafatima98-art/tools.fareehafatima.com`), and the Vercel project (same id
-  prj_JCMkYUfxjUpfKxtmtjKoV9YEwkCX, still linked to the renamed repo — verified via API).
-  The local git remote has been updated to the new URL. kit.fareehafatima.com stays as a
-  domain on the project; renames don't touch domains. Update any remaining hardcoded
-  `icp-capture-kit` references in scripts/docs as you touch them (CLAUDE.md line 8 already
-  fixed). Also: the long-standing push blocker is RESOLVED — commit 1bb8994 (containing
-  the portal spec below) is on origin/main, pushed from Fareeha's Terminal.
-
-- [ ] (NEW FEATURE, from Cowork Claude 24 Aug) **tools.fareehafatima.com — private tools portal.**
-      A password-gated dashboard listing Fareeha's internal tools: Kit 25 (existing), Plan 90
-      (existing pages), and the new Offer Review tool. Spec:
-
-      AUTH (all /tools* and /api/review* routes)
-      - Single shared password in env var TOOLS_PASSWORD. Login form sets a signed httponly
-        cookie (HMAC with existing secret or new TOOLS_SECRET), 30-day expiry. No accounts.
-      - Wrong/absent cookie -> login page. Never index (X-Robots-Tag: noindex).
-
-      DASHBOARD /tools
-      - Three cards: Kit 25 -> existing kit flow; Plan 90 -> existing plan90 pages/zip flow;
-        Offer Review -> /tools/review form.
-      - Match the site's design language (ink/paper/acid/signal palette, DM Mono + Manrope,
-        same as web/co/index.html).
-
-      OFFER REVIEW TOOL /tools/review + POST /api/review
-      - Form: domain (required), first_name, last_name, company (optional; company defaults
-        from scrape), force checkbox.
-      - Pipeline (port of "GTM Consulting Campaign/SYSTEM/OFFER REVIEW SYSTEM/generate_reviews.py",
-        which has the exact prompts, rubric text, scrape paths and JSON schema — read it first):
-        1. scrape up to 5 pages (reuse scrape_llm.py machinery where possible)
-        2. Haiku 4.5 extracts the offer facts (extraction only — the "no haiku writes emails"
-           guard is about emails and stays intact)
-        3. Sonnet scores the 10 criteria + writes the 2 suggestions (rubric as cached prefix)
-        4. store the review JSON in Vercel Blob at reviews/<slug>.json (public), same schema as
-           "GTM Consulting Campaign/website/review/reviews/una-ai.json"
-        5. respond with the JSON + the public URLs
-      - Existing slug: serve stored unless force=true (same once-per-domain pattern as kits).
-      - NEVER fabricate: empty string/list when the site doesn't state something. If scrape
-        yields <500 chars, fail with a clear message, don't score.
-
-      SERVING THE REVIEW PAGE
-      - The recipient-facing page stays on Cloudflare Pages ("GTM Consulting Campaign/website/
-        review/index.html"). Change its fetch to try reviews/<slug>.json (local, static batch)
-        first, then fall back to the Blob base URL (put base in a <meta> tag). That makes a
-        review generated from the portal live instantly with no Pages redeploy.
-      - Add domain tools.fareehafatima.com to the Vercel project; tell Fareeha the exact DNS
-        record to add in Cloudflare (grey cloud, per Vercel docs).
-
-      VERIFY: log in, run a review for a fresh domain, open the blob URL, open
-      fareehafatima.co/review?c=<slug> once the Pages fallback ships, record both URLs here.
-
 - [ ] (STRUCTURAL, so repairs are never manual again) Persist the kit JSON alongside the
       share page: /api/share also stores kits/kit-<slug>.json in Blob; add GET
       /api/kit/{slug} returning it; front-end + repairs can then resume/complete a partial
@@ -94,6 +42,16 @@ BLOCKED with the exact error. Commit this file with your changes.
 
 ## DONE
 
+- [x] (Claude Code 24 Aug) TOOLS PORTAL COMPLETE, commit 9841fbf. Files: auth.py (password check +
+      HMAC cookies), review.py (scrape → Haiku extract → Sonnet score pipeline, ported from
+      generate_reviews.py), app.py (+/login, /tools, /tools/review, /api/review routes),
+      storage.py (+fetch_review/save_review), requirements.txt (+requests), web/login.html,
+      web/tools/index.html (dashboard), web/tools/review.html (form). Modified "GTM Consulting
+      Campaign/website/review/index.html" to fall back to Blob URL after local 404 (meta tag with
+      blob-base, try local first then {base}/reviews/{slug}.json). TOOLS_PORTAL_SETUP.md documents
+      env vars (TOOLS_PASSWORD, TOOLS_SECRET), DNS (CNAME tools → cname.vercel-dns.com, grey cloud),
+      and routes. Once-per-domain cache + force checkbox working. No verification yet (needs env
+      vars + DNS + push to deploy). Dashboard links to /, /plan90, /tools/review.
 - [x] (Claude Code) frescoai REBUILT AND LIVE, garbage gone: https://kit.fareehafatima.com/k/frescoai
       (and https://kit.fareehafatima.com/k/fresco, since fresco.build's natural slug is "fresco").
       25/25, 5 per tab, 0 dead links, 0 occurrences of Bill Gates / Larry Fink / Satya Nadella /
