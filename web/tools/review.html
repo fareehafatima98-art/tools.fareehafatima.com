@@ -192,7 +192,7 @@ async function run() {
     const res = await fetch('/api/review', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({domain, first_name, last_name, company, force})
+      body: JSON.stringify({domain, first_name, last_name, company, campaign, force})
     });
 
     const data = await res.json();
