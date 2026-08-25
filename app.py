@@ -263,6 +263,7 @@ class ReviewReq(BaseModel):
     first_name: str = ""
     last_name: str = ""
     company: str = ""
+    campaign: str = "na"
     force: bool = False
 
 @app.post("/api/review")
@@ -271,6 +272,7 @@ def generate_offer_review(request: Request, req: ReviewReq):
     if not _check_auth(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
 
+    site = "fareehafatima.org" if req.campaign.lower() in ("eu", "europe", "uk", "org", "emea") else "fareehafatima.co"
     slug = review.slugify(req.company or req.domain)
 
     # Once-per-domain: serve stored unless force=true
@@ -283,7 +285,7 @@ def generate_offer_review(request: Request, req: ReviewReq):
                 "slug": slug,
                 "review": stored,
                 "blob_url": blob_url,
-                "page_url": f"https://fareehafatima.co/review?c={slug}"
+                "page_url": f"https://{site}/review?c={slug}"
             })
 
     try:
@@ -314,7 +316,7 @@ def generate_offer_review(request: Request, req: ReviewReq):
             "slug": slug,
             "review": review_data,
             "blob_url": blob_url,
-            "page_url": f"https://fareehafatima.co/review?c={slug}"
+            "page_url": f"https://{site}/review?c={slug}"
         })
 
     except review.ReviewError as e:

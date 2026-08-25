@@ -70,6 +70,15 @@ button:disabled{opacity:.4;cursor:default}
       <input type="text" id="domain" placeholder="example.com" required/>
       <div class="hint">The agent will scrape up to 5 pages (homepage, /pricing, /product, /customers, etc.)</div>
     </div>
+    <div class="field">
+      <label for="campaign">Campaign</label>
+      <select id="campaign">
+        <option value="na">North America (fareehafatima.co)</option>
+        <option value="eu">Europe / UK (fareehafatima.org)</option>
+      </select>
+      <div class="hint">Decides which domain the recipient link uses</div>
+    </div>
+
 
     <div class="row">
       <div class="field">
@@ -171,6 +180,7 @@ async function run() {
   const first_name = document.getElementById('first_name').value.trim();
   const last_name = document.getElementById('last_name').value.trim();
   const company = document.getElementById('company').value.trim();
+  const campaign = document.getElementById('campaign').value;
   const force = document.getElementById('force').checked;
 
   const btn = document.getElementById('submit');
