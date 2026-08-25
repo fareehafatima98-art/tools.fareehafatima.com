@@ -123,27 +123,17 @@ def clean_html(raw: str) -> str:
     return "\n".join(ln.strip() for ln in t.splitlines() if ln.strip())
 
 def scrape_domain(domain: str) -> str:
-    """Scrape up to MAX_PAGES from a domain, returning concatenated plain text."""
-    base = domain if domain.startswith("http") else "https://" + domain
-    seen, chunks = set(), []
-    for path in CANDIDATE_PATHS:
-        if len(chunks) >= MAX_PAGES:
-            break
-        url = base.rstrip("/") + path
-        if url in seen:
-            continue
-        seen.add(url)
-        try:
-            r = requests.get(url, timeout=TIMEOUT, headers={"User-Agent": UA})
-            if r.status_code != 200 or "text/html" not in r.headers.get("content-type", ""):
-                continue
-            text = clean_html(r.text)
-            if len(text) > 200:
-                chunks.append(f"[{url}]\n{text}")
-        except Exception:
-            continue
-        time.sleep(0.4)  # polite crawl
-    return "\n\n".join(chunks)[:MAX_CHARS]
+    """Scrape readable copy for a domain.
+
+    Delegates to scrape_llm.scrape_site, the kit's tested scraper: plain fetches
+    first, then the r.jina.ai reader proxy when the site turns out to be
+    client-rendered (which is what made thrive-platform.com return 0 chars from
+    a plain fetch). Returns "" when the site is genuinely unreadable, which the
+    caller treats as a hard failure rather than scoring on nothing.
+    """
+    import scrape_llm
+    d = re.sub(r"^https?://", "", domain).rstrip("/")
+    return (scrape_llm.scrape_site(d) or "")[:MAX_CHARS]
 
 # ---------------------------------------------------------------- Claude
 
