@@ -157,6 +157,10 @@ def call_claude(model: str, prompt: str, max_tokens: int,
         max_tokens=max_tokens,
         messages=[{"role": "user", "content": blocks}],
     )
+    if getattr(r, "stop_reason", None) == "max_tokens":
+        raise RuntimeError(
+            f"model output truncated at max_tokens={max_tokens}; "
+            "thinking tokens count against the budget, raise it")
     # content may lead with a ThinkingBlock; take the first text block.
     for block in r.content:
         if getattr(block, "type", "") == "text":
@@ -235,7 +239,7 @@ def generate_review(domain: str, first_name: str = "", last_name: str = "",
 
     # 2. Extract with Haiku
     extract_prompt = EXTRACT_PROMPT.replace("{text}", text)
-    extract = call_claude_json(HAIKU, extract_prompt, 1200)
+    extract = call_claude_json(HAIKU, extract_prompt, 2500)
 
     # If company not provided, try to infer from domain
     if not company:
@@ -249,7 +253,7 @@ def generate_review(domain: str, first_name: str = "", last_name: str = "",
         company=company,
         extract=json.dumps(extract, indent=2)
     )
-    scored = call_claude_json(SONNET, score_prompt, 1400, cache_prefix=RUBRIC)
+    scored = call_claude_json(SONNET, score_prompt, 6000, cache_prefix=RUBRIC)
 
     # 4. Build review document
     sugg = scored.get("suggestions", [])[:2]
