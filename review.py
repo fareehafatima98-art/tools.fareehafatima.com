@@ -171,6 +171,27 @@ def parse_json_response(s: str) -> dict:
     m = re.search(r"\{.*\}", s, re.S)
     return json.loads(m.group(0) if m else s)
 
+def call_claude_json(model: str, prompt: str, max_tokens: int,
+                     cache_prefix: Optional[str] = None) -> dict:
+    """Call the model and parse its JSON, retrying once with the parse error.
+
+    Models occasionally emit invalid JSON (usually an unescaped quote inside a
+    string, since the prompts encourage quoting the site's own copy). On a parse
+    failure, show the model its output and the exact error and ask for corrected
+    strict JSON. Costs one extra call in the rare failure case.
+    """
+    raw = call_claude(model, prompt, max_tokens, cache_prefix=cache_prefix)
+    try:
+        return parse_json_response(raw)
+    except json.JSONDecodeError as e:
+        repair = (
+            "Your previous reply was invalid JSON and failed to parse.\n"
+            f"Parser error: {e}\n\nYour reply was:\n{raw}\n\n"
+            "Return the SAME content as strict, valid JSON only. Escape every "
+            'double quote inside string values as \\". No code fences, no prose.'
+        )
+        return parse_json_response(call_claude(model, repair, max_tokens))
+
 # ---------------------------------------------------------------- pipeline
 
 def slugify(s: str) -> str:
@@ -214,8 +235,7 @@ def generate_review(domain: str, first_name: str = "", last_name: str = "",
 
     # 2. Extract with Haiku
     extract_prompt = EXTRACT_PROMPT.replace("{text}", text)
-    extract_raw = call_claude(HAIKU, extract_prompt, 1200)
-    extract = parse_json_response(extract_raw)
+    extract = call_claude_json(HAIKU, extract_prompt, 1200)
 
     # If company not provided, try to infer from domain
     if not company:
@@ -229,8 +249,7 @@ def generate_review(domain: str, first_name: str = "", last_name: str = "",
         company=company,
         extract=json.dumps(extract, indent=2)
     )
-    scored_raw = call_claude(SONNET, score_prompt, 1400, cache_prefix=RUBRIC)
-    scored = parse_json_response(scored_raw)
+    scored = call_claude_json(SONNET, score_prompt, 1400, cache_prefix=RUBRIC)
 
     # 4. Build review document
     sugg = scored.get("suggestions", [])[:2]
