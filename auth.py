@@ -17,7 +17,8 @@ def verify_password(password: str) -> bool:
     """Check if the submitted password matches TOOLS_PASSWORD."""
     if not PASSWORD:
         return False
-    return hmac.compare_digest(password, PASSWORD)
+    # compare as bytes: compare_digest rejects str with non-ASCII characters
+    return hmac.compare_digest(password.encode("utf-8"), PASSWORD.encode("utf-8"))
 
 def sign_cookie_value(expiry: int) -> str:
     """Create an HMAC-signed cookie value: expiry|signature"""
