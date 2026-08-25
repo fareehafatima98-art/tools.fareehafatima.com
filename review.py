@@ -157,7 +157,11 @@ def call_claude(model: str, prompt: str, max_tokens: int,
         max_tokens=max_tokens,
         messages=[{"role": "user", "content": blocks}],
     )
-    return r.content[0].text
+    # content may lead with a ThinkingBlock; take the first text block.
+    for block in r.content:
+        if getattr(block, "type", "") == "text":
+            return block.text
+    raise RuntimeError("model response contained no text block")
 
 def parse_json_response(s: str) -> dict:
     """Extract and parse JSON from a model response (strips fences if present)."""
