@@ -62,7 +62,11 @@ class ShareReq(BaseModel):
     total_emails: int = 0
 
 @app.get("/", response_class=HTMLResponse)
-def home():
+def home(request: Request):
+    # One app, two domains: tools.fareehafatima.com is the private portal,
+    # kit.fareehafatima.com (and everything else) is the public capture kit.
+    if request.headers.get("host", "").split(":")[0].startswith("tools."):
+        return RedirectResponse("/tools", status_code=307)
     html = (HERE / "web" / "index.html").read_text(encoding="utf-8")
     # no-store so a new deploy's UI is served immediately instead of a stale copy.
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
