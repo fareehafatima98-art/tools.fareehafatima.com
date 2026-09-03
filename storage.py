@@ -193,3 +193,43 @@ def save_kit_json(slug, kit_data):
     except Exception as e:
         _capture("save_kit_json", e)
         return False
+
+# ---------------------------------------------------------------- thumbnails
+
+def save_thumb(filename, jpeg_bytes):
+    """Upload a thumbnail image to thumbs/<filename>; returns its public URL."""
+    global _LAST_ERROR
+    _LAST_ERROR = None
+    if not enabled():
+        _LAST_ERROR = "BLOB_READ_WRITE_TOKEN not set at runtime"
+        return None
+    try:
+        r = _req(f"{API}/thumbs/{filename}", method="PUT",
+                 data=jpeg_bytes,
+                 headers={"content-type": "image/jpeg",
+                          "x-content-type": "image/jpeg",
+                          "x-add-random-suffix": "0",
+                          "x-allow-overwrite": "1"})
+        url = r.get("url")
+        if not url:
+            _LAST_ERROR = f"save_thumb: no url in Blob response: {json.dumps(r)[:400]}"
+        return url
+    except Exception as e:
+        return _capture("save_thumb", e)
+
+def fetch_thumb(filename):
+    """Download a stored thumbnail's bytes by filename, or None."""
+    global _LAST_ERROR
+    _LAST_ERROR = None
+    if not enabled():
+        _LAST_ERROR = "BLOB_READ_WRITE_TOKEN not set at runtime"
+        return None
+    try:
+        r = _req(f"{API}?prefix=thumbs/{filename}&limit=1")
+        blobs = r.get("blobs") or []
+        if not blobs:
+            return None
+        with urllib.request.urlopen(urllib.request.Request(blobs[0]["url"]), timeout=15) as resp:
+            return resp.read()
+    except Exception as e:
+        return _capture("fetch_thumb", e)

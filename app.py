@@ -323,3 +323,57 @@ def generate_offer_review(request: Request, req: ReviewReq):
         return JSONResponse({"error": str(e)}, status_code=422)
     except Exception as e:
         return JSONResponse({"error": str(e) or e.__class__.__name__}, status_code=500)
+
+# ---------------------------------------------------------------- thumbnails
+
+class ThumbReq(BaseModel):
+    domain: str
+    first_name: str = ""
+    last_name: str = ""
+    company: str = ""
+    force: bool = False
+
+@app.post("/api/thumb")
+def generate_thumb(request: Request, req: ThumbReq):
+    """Generate both Offer Scorecard thumbnail variants for a prospect and
+    store them in Blob. Auth required. Returns the /thumbs/ paths to embed:
+    variant A (plain) = <slug>.jpg, variant B (face) = <slug>-face.jpg."""
+    if not _check_auth(request):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    import thumb, review as _rv
+    slug = _rv.slugify(req.company or req.domain)
+    names = {"plain": f"{slug}.jpg", "face": f"{slug}-face.jpg"}
+
+    if not req.force:
+        if storage.fetch_thumb(names["plain"]) and storage.fetch_thumb(names["face"]):
+            return JSONResponse({"cached": True, "slug": slug,
+                                 "plain": f"/thumbs/{names['plain']}",
+                                 "face": f"/thumbs/{names['face']}"})
+    try:
+        images = thumb.generate(req.domain, req.first_name, req.last_name,
+                                req.company or req.domain)
+        out = {"cached": False, "slug": slug}
+        for variant, data in images.items():
+            url = storage.save_thumb(names[variant], data)
+            if not url:
+                return JSONResponse({"error": f"blob store failed: {storage.last_error()}"},
+                                    status_code=500)
+            out[variant] = f"/thumbs/{names[variant]}"
+            out[variant + "_bytes"] = len(data)
+        return JSONResponse(out)
+    except thumb.ThumbError as e:
+        return JSONResponse({"error": str(e)}, status_code=422)
+    except Exception as e:
+        return JSONResponse({"error": str(e) or e.__class__.__name__}, status_code=500)
+
+@app.get("/thumbs/{filename}")
+def serve_thumb(filename: str):
+    """Serve a stored thumbnail through our own domain (public: these are
+    embedded in emails). Long cache; images are content-stable per slug."""
+    if not re.fullmatch(r"[a-z0-9-]+\.jpg", filename):
+        return JSONResponse({"error": "bad filename"}, status_code=400)
+    data = storage.fetch_thumb(filename)
+    if not data:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return Response(content=data, media_type="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=86400"})

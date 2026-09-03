@@ -225,3 +225,11 @@ BLOCKED with the exact error. Commit this file with your changes.
       ANTHROPIC_API_KEY, APOLLO_API_KEY, APOLLO_ENRICH=1 working, maxDuration=60 in vercel.json.
 - [x] (Cowork Claude) Built v3.1 feature set; found GitHub already carried the newer Vercel
       plumbing. Task 1 rewritten to hybrid-sync instead of force-push. Claude Code's catch — correct.
+
+## DONE (Cowork Claude, 2026-09-03)
+- [x] Added Offer Scorecard thumbnail system: thumb.py (mShots fetch w/ placeholder polling,
+  Pillow composite, variants plain/face), storage.save_thumb/fetch_thumb, POST /api/thumb
+  (auth, cached per slug, force overrides), GET /thumbs/<file> (public, 24h cache).
+  Assets: assets/face.jpg + DejaVu fonts. Pillow added to requirements.txt.
+  Purpose: A/B split test in Instantly link email — variant A embeds /thumbs/<slug>.jpg,
+  variant B /thumbs/<slug>-face.jpg, both linking to the review page. Fareeha pushes.
