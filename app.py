@@ -389,3 +389,18 @@ def serve_thumb(filename: str):
         return JSONResponse({"error": "not found"}, status_code=404)
     return Response(content=data, media_type="image/jpeg",
                     headers={"Cache-Control": "public, max-age=86400"})
+
+@app.get("/t")
+def thumb_by_review_url(u: str = "", v: str = "plain"):
+    """Serve a thumbnail from a review URL, so emails need no extra custom
+    field: <img src="https://thumbs.fareehafatima.co/t?u={{review_url}}">.
+    Extracts the slug from the review link's c= param. v=face for variant B."""
+    m = re.search(r"[?&]c=([a-z0-9-]+)", u or "")
+    if not m:
+        return JSONResponse({"error": "no slug in u"}, status_code=400)
+    filename = m.group(1) + ("-face.jpg" if v == "face" else ".jpg")
+    data = storage.fetch_thumb(filename)
+    if not data:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return Response(content=data, media_type="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=86400"})

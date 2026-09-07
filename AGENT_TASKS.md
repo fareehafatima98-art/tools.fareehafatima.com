@@ -235,3 +235,5 @@ BLOCKED with the exact error. Commit this file with your changes.
   variant B /thumbs/<slug>-face.jpg, both linking to the review page. Fareeha pushes.
 - [x] Added /tools/thumb UI page (web/tools/thumb.html) + dashboard card: manual thumbnail
   generation form -> /api/thumb, previews both variants with copy-URL buttons. Fareeha pushes.
+- [x] Added GET /t?u=<review_url>&v=plain|face — serves the thumbnail by extracting the slug
+  from the lead's existing review_url, so Instantly needs NO new custom field / no re-import.
