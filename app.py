@@ -246,6 +246,18 @@ def tools_dashboard(request: Request):
         "X-Robots-Tag": "noindex"
     })
 
+@app.get("/tools/thumb", response_class=HTMLResponse)
+def thumb_form(request: Request):
+    """Offer Scorecard thumbnail tool form."""
+    if not _check_auth(request):
+        return RedirectResponse("/login", status_code=302)
+
+    html = (HERE / "web" / "tools" / "thumb.html").read_text(encoding="utf-8")
+    return HTMLResponse(html, headers={
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex"
+    })
+
 @app.get("/tools/review", response_class=HTMLResponse)
 def review_form(request: Request):
     """Offer Review tool form."""

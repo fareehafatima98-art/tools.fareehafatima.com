@@ -233,3 +233,5 @@ BLOCKED with the exact error. Commit this file with your changes.
   Assets: assets/face.jpg + DejaVu fonts. Pillow added to requirements.txt.
   Purpose: A/B split test in Instantly link email — variant A embeds /thumbs/<slug>.jpg,
   variant B /thumbs/<slug>-face.jpg, both linking to the review page. Fareeha pushes.
+- [x] Added /tools/thumb UI page (web/tools/thumb.html) + dashboard card: manual thumbnail
+  generation form -> /api/thumb, previews both variants with copy-URL buttons. Fareeha pushes.
