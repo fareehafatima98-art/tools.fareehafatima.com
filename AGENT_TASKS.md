@@ -6,6 +6,9 @@ BLOCKED with the exact error. Commit this file with your changes.
 
 ## INBOX
 
+- [ ] MIGRATE OFF VERCEL BLOB (cost): Vercel suspended the Hobby blob store on Sep 15 (all reads 403) and Fareeha had to upgrade to Pro mid-launch. Move review/thumb storage to Cloudflare R2 (S3-compatible; she already uses Cloudflare; free tier covers our ~1GB + egress-free serving). Scope: (1) storage.py: swap vercel_blob calls for boto3/S3 against R2 (env: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET), keep save_review/fetch_review/save_thumb/fetch_thumb signatures identical; (2) serve via an R2 public bucket or custom domain, update the blob-base meta tag in the review page template and any hardcoded gzbaq0nk2iyh6nku URLs in app.py/review.py/web/; (3) one-time copy script for existing blobs (reviews/*.json, thumbs/*.jpg, kits/*.html) Vercel->R2, run AFTER Pro unblocks reads; (4) verify /t, /review?c=, /api/review, /api/thumb end to end on a test slug, then Fareeha can downgrade Vercel back to Hobby. Do NOT break live campaigns: keep Vercel paths working until R2 verified, then flip.
+
+
 - [ ] (Fareeha, THE ONLY THING BLOCKING TRACKING) `git push origin main` from your Terminal.
       Unpushed: 35fac2a (unreadable-site guard + scrape fallback), 9f07d8c (analytics snippet +
       the /_vercel rewrite fix + share guard), plus the quote/statistics rule and log commits.
