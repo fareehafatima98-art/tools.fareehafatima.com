@@ -215,6 +215,109 @@ class ReviewError(Exception):
     """Raised when the review cannot be generated."""
     pass
 
+# ---------------------------------------------------------------- Outbound Readiness Scorecard (HEDWIG)
+
+SCORECARD_RUBRIC = """You are scoring how ready a B2B healthcare company's public offer is for
+cold outbound. Ten criteria, each out of 5, judged only from what the company's own website says.
+The question behind every criterion: could a cold email built from this site earn a reply from a
+busy buyer who has never heard of them?
+
+1  Buyer named — does the site say who it is for, in the buyer's words (role, care setting, size)? "Healthcare organizations" scores low.
+2  Offer in one sentence — could a stranger repeat what they do and the result in one line?
+3  Outcome is a number — is the promise numeric (hours saved, days to go-live, percentage lift) or adjectives?
+4  Proof a cold reader believes — named customers, quantified results, quotes, clearances or certifications.
+5  Speed to first value — how fast the first result lands, stated in writing.
+6  Low-friction first step — is there an ask smaller than "book a demo" (pilot, evaluation unit, assessment, trial)? Outbound converts on the small yes.
+7  Risk removed — guarantee, pilot terms, refund, anything that takes the downside off the buyer.
+8  Differentiation in a sentence — one thing a competitor cannot honestly say.
+9  One conversion path — a single primary call to action, or several competing ones.
+10 Reason to act now — an honest constraint (regulatory date, capacity, pricing window) or none.
+
+SCORING DISCIPLINE
+- Verify before you downgrade. A guarantee or pilot stated plainly in the source is confirmed.
+- Represent the company's promises at full strength before assessing them.
+- A zero is allowed and useful. Criterion 10 is very often 0.
+- Never invent a fact. If the source does not say it, it is absent, and absence is the finding.
+
+SCOPE DISCIPLINE
+- Stay in the outbound lane: who to write to, what to say, what to ask for, what proof to attach.
+- Never recommend product, pricing-model, staffing or delivery changes.
+- Never invent urgency.
+
+VOICE
+- Write as a colleague who read carefully, not a consultant grading homework.
+- Frame every gap as cheap to test rather than broken.
+- No em dashes. No exclamation marks. American spelling."""
+
+SCORECARD_PROMPT = """Here is what the company states about its own offer, extracted from its website.
+
+COMPANY: {company}
+EXTRACT:
+{extract}
+
+Score all ten criteria, then choose the TWO changes that would most improve the reply rate of a
+cold email campaign and are cheapest to test. Both must be about who to target, what to say,
+what to ask for, or what proof to show.
+
+Return strict JSON:
+{{
+  "scores": {{"1": n, "2": n, "3": n, "4": n, "5": n, "6": n, "7": n, "8": n, "9": n, "10": n}},
+  "notes": {{"1": "one line citing what you saw", ...one per criterion...}},
+  "suggestions": [
+    {{"title": "the gap, stated as a sentence, no colon, under 14 words",
+      "body": "2 to 3 sentences. Name what they currently say, why it costs them replies with this buyer, and what shape the fix takes. Do not prescribe exact copy."}},
+    {{"title": "...", "body": "..."}}
+  ]
+}}
+
+The two suggestion titles must not both be about the same criterion."""
+
+SCORECARD_CRITERIA = ["Buyer named", "Offer in one sentence", "Outcome is a number",
+    "Proof a cold reader believes", "Speed to first value", "Low-friction first step",
+    "Risk removed", "Differentiation in a sentence", "One conversion path", "Reason to act now"]
+
+def generate_scorecard(domain: str, first_name: str = "", last_name: str = "",
+                       company: str = "") -> Dict[str, Any]:
+    """HEDWIG Outbound Readiness Scorecard. Same pipeline and JSON shape as generate_review,
+    different rubric, different labels, kind="scorecard"."""
+    text = scrape_domain(domain)
+    if len(text) < 500:
+        raise ReviewError(f"Scrape returned only {len(text)} chars - site may be unreadable or client-rendered")
+    extract = call_claude_json(HAIKU, EXTRACT_PROMPT.replace("{text}", text), 2500)
+    if not company:
+        company = domain.replace("https://", "").replace("http://", "").replace("www.", "").split(".")[0].title()
+    scored = call_claude_json(SONNET, SCORECARD_PROMPT.format(company=company, extract=json.dumps(extract, indent=2)),
+                              6000, cache_prefix=SCORECARD_RUBRIC)
+    sugg = scored.get("suggestions", [])[:2]
+    if len(sugg) < 2:
+        raise ReviewError(f"Model returned {len(sugg)} suggestions (expected 2)")
+    scores = scored.get("scores", {})
+    total = sum(int(v) for v in scores.values() if str(v).lstrip("-").isdigit())
+    return {
+        "kind": "scorecard",
+        "brand": "HEDWIG",
+        "slug": slugify(company),
+        "first_name": first_name.strip(),
+        "last_name": last_name.strip(),
+        "company": company,
+        "monogram": monogram(company),
+        "logo_url": f"https://logo.clearbit.com/{domain}",
+        "video_url": "",
+        "video_length": "",
+        "caption": "What we found, in under a minute.",
+        "title": "Outbound Readiness Scorecard",
+        "heading": "Two things that would lift your reply rate first",
+        "suggestions": sugg,
+        "calendly": "https://calendly.com/hifareeha/discovery-meeting-with-fareeha",
+        "generated": time.strftime("%Y-%m-%d"),
+        "sources": [domain],
+        "criteria": SCORECARD_CRITERIA,
+        "total": total,
+        "_scores": scores,
+        "_notes": scored.get("notes", {}),
+        "_extract": extract,
+    }
+
 def generate_review(domain: str, first_name: str = "", last_name: str = "",
                    company: str = "") -> Dict[str, Any]:
     """

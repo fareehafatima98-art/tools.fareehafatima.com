@@ -278,9 +278,36 @@ class ReviewReq(BaseModel):
     campaign: str = "na"
     force: bool = False
 
+@app.post("/api/scorecard")
+def generate_scorecard(request: Request, req: ReviewReq):
+    """HEDWIG Outbound Readiness Scorecard. Stored at scorecards/<slug>.json.
+    Page: https://hedwigandco.com/scorecard?c=<slug> (route is an AGENT_TASKS item)."""
+    if not _check_auth(request):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    slug = review.slugify(req.company or req.domain)
+    path = f"scorecards/{slug}.json"
+    blob_url = f"https://gzbaq0nk2iyh6nku.public.blob.vercel-storage.com/{path}"
+    page_url = f"https://hedwigandco.com/scorecard?c={slug}"
+    if not req.force:
+        stored = storage.fetch_json(path)
+        if stored:
+            return JSONResponse({"cached": True, "slug": slug, "review": stored, "blob_url": blob_url, "page_url": page_url})
+    try:
+        data = review.generate_scorecard(domain=req.domain, first_name=req.first_name,
+                                         last_name=req.last_name, company=req.company)
+        if not storage.enabled():
+            return JSONResponse({"error": "blob storage not enabled"}, status_code=500)
+        if not storage.save_json(path, data):
+            return JSONResponse({"error": f"failed to store scorecard: {storage.last_error()}"}, status_code=500)
+        return JSONResponse({"cached": False, "slug": slug, "review": data, "blob_url": blob_url, "page_url": page_url})
+    except review.ReviewError as e:
+        return JSONResponse({"error": str(e)}, status_code=422)
+    except Exception as e:
+        return JSONResponse({"error": str(e) or e.__class__.__name__}, status_code=500)
+
 @app.post("/api/review")
 def generate_offer_review(request: Request, req: ReviewReq):
-    """Generate an offer review. Auth required."""
+    """Generate an offer review (legacy GTM Nerd rubric). Auth required."""
     if not _check_auth(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
 
