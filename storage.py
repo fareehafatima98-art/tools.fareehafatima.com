@@ -233,3 +233,45 @@ def fetch_thumb(filename):
             return resp.read()
     except Exception as e:
         return _capture("fetch_thumb", e)
+
+# ---------------------------------------------------------------- generic JSON docs (leads system)
+
+def fetch_json(path):
+    """Fetch any JSON blob by exact path (e.g. 'leads/hedwig.json'), or None."""
+    global _LAST_ERROR
+    _LAST_ERROR = None
+    if not enabled():
+        _LAST_ERROR = "BLOB_READ_WRITE_TOKEN not set at runtime"
+        return None
+    try:
+        r = _req(f"{API}?prefix={path}&limit=1")
+        blobs = r.get("blobs") or []
+        if not blobs:
+            return None
+        url = blobs[0]["url"]
+        with urllib.request.urlopen(urllib.request.Request(url), timeout=20) as resp:
+            return json.loads(resp.read().decode("utf-8", "ignore"))
+    except Exception as e:
+        return _capture("fetch_json", e)
+
+def save_json(path, data):
+    """Overwrite a JSON blob at exact path. Returns True on success."""
+    global _LAST_ERROR
+    _LAST_ERROR = None
+    if not enabled():
+        _LAST_ERROR = "BLOB_READ_WRITE_TOKEN not set at runtime"
+        return False
+    try:
+        payload = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        r = _req(f"{API}/{path}", method="PUT", data=payload,
+                 headers={"content-type": "application/json; charset=utf-8",
+                          "x-content-type": "application/json; charset=utf-8",
+                          "x-add-random-suffix": "0",
+                          "x-allow-overwrite": "1"})
+        if not r.get("url"):
+            _LAST_ERROR = f"save_json: no url in Blob response: {json.dumps(r)[:400]}"
+            return False
+        return True
+    except Exception as e:
+        _capture("save_json", e)
+        return False

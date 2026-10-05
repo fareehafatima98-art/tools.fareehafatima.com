@@ -30,12 +30,12 @@ Env: ANTHROPIC_API_KEY, APOLLO_API_KEY, APOLLO_ENRICH=1,
      BLOB_READ_WRITE_TOKEN (auto-added when you enable Blob storage on Vercel),
      TOOLS_PASSWORD, TOOLS_SECRET (for password-gated tools portal).
 """
-import re, pathlib, json
+import os, re, pathlib, json
 from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, Request, Form, Cookie
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from pydantic import BaseModel
-import capture, storage, report_html, auth, review
+import capture, storage, report_html, auth, review, leads
 
 HERE = pathlib.Path(__file__).resolve().parent
 app = FastAPI(title="ICP Capture Kit")
@@ -404,3 +404,94 @@ def thumb_by_review_url(u: str = "", v: str = "plain"):
         return JSONResponse({"error": "not found"}, status_code=404)
     return Response(content=data, media_type="image/jpeg",
                     headers={"Cache-Control": "public, max-age=86400"})
+
+# ---------------------------------------------------------------- Lead management system (multi-client)
+
+def _auth_or_401(request: Request):
+    if not _check_auth(request):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    return None
+
+@app.get("/tools/leads", response_class=HTMLResponse)
+def leads_page(request: Request):
+    if not _check_auth(request):
+        return RedirectResponse("/login", status_code=302)
+    html = (HERE / "web" / "tools" / "leads.html").read_text(encoding="utf-8")
+    return HTMLResponse(html, headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
+@app.get("/api/leads/clients")
+def leads_clients(request: Request):
+    if (r := _auth_or_401(request)): return r
+    return JSONResponse({"clients": leads.list_clients()})
+
+@app.post("/api/leads/clients")
+async def leads_add_client(request: Request):
+    if (r := _auth_or_401(request)): return r
+    body = await request.json()
+    c = leads.add_client(body.get("client",""), body.get("name",""))
+    return JSONResponse({"ok": True, "client": c})
+
+@app.get("/api/leads/{client}")
+def leads_get(request: Request, client: str):
+    if (r := _auth_or_401(request)): return r
+    doc = leads.load(client)
+    return JSONResponse({"client": client, "name": doc.get("name"), "updated": doc.get("updated"),
+                         "leads": list(doc["leads"].values()), "tests": leads.test_stats(doc),
+                         "summary": leads.summary(doc), "storage_error": storage.last_error()})
+
+@app.post("/api/leads/{client}/upsert")
+async def leads_upsert(request: Request, client: str):
+    """Body: {"leads": [ {...}, ... ]} — manual edits, never from sync."""
+    if (r := _auth_or_401(request)): return r
+    body = await request.json()
+    doc = leads.load(client)
+    n = 0
+    for rec in body.get("leads", []):
+        if leads.upsert(doc, rec, from_sync=False): n += 1
+    ok = leads.save(client, doc)
+    return JSONResponse({"ok": ok, "upserted": n, "error": None if ok else storage.last_error()})
+
+@app.post("/api/leads/{client}/tests")
+async def leads_tests(request: Request, client: str):
+    """Body: {"id": "...", "name":..., "hypothesis":..., "variable":..., "variants":[...], "metric":..., "start":..., "end":..., "decision":...}"""
+    if (r := _auth_or_401(request)): return r
+    body = await request.json()
+    doc = leads.load(client)
+    tid = body.get("id") or re.sub(r"[^a-z0-9]+","-", (body.get("name") or "test").lower()).strip("-")
+    cur = doc["tests"].get(tid, {})
+    cur.update({k: v for k, v in body.items() if k != "id"})
+    cur.setdefault("created", leads._now())
+    doc["tests"][tid] = cur
+    ok = leads.save(client, doc)
+    return JSONResponse({"ok": ok, "id": tid, "error": None if ok else storage.last_error()})
+
+@app.post("/api/leads/{client}/import")
+async def leads_import(request: Request, client: str):
+    """Body: {"csv": "<text>", "campaign": "optional", "source": "optional"} — generic lead CSV or Instantly Activity export."""
+    if (r := _auth_or_401(request)): return r
+    body = await request.json()
+    doc = leads.load(client)
+    counts = leads.import_csv(doc, body.get("csv",""), body.get("campaign",""), body.get("source","csv"))
+    ok = leads.save(client, doc)
+    return JSONResponse({"ok": ok, **counts, "error": None if ok else storage.last_error()})
+
+@app.post("/api/leads/{client}/sync")
+async def leads_sync(request: Request, client: str):
+    """Pull from Instantly API v2. Key from INSTANTLY_API_KEY env (or body.api_key for a one-off)."""
+    if (r := _auth_or_401(request)): return r
+    body = await request.json() if request.headers.get("content-type","").startswith("application/json") else {}
+    key = body.get("api_key") or os.environ.get("INSTANTLY_API_KEY","")
+    if not key:
+        return JSONResponse({"ok": False, "error": "INSTANTLY_API_KEY not set"}, status_code=400)
+    doc = leads.load(client)
+    report = leads.sync_instantly(doc, key, body.get("campaign_ids"))
+    ok = leads.save(client, doc)
+    return JSONResponse({"ok": ok, **report, "error": None if ok else storage.last_error()})
+
+@app.get("/tools/leads.csv")
+def leads_csv(request: Request, client: str = "hedwig"):
+    if not _check_auth(request):
+        return RedirectResponse("/login", status_code=302)
+    doc = leads.load(client)
+    return Response(leads.to_csv(doc), media_type="text/csv",
+                    headers={"Content-Disposition": f'attachment; filename="{client}-leads.csv"', "Cache-Control": "no-store"})

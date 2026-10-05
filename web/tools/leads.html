@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leads — HEDWIG tools</title>
+<style>
+:root{color-scheme:light;--ink:#141414;--muted:#6b6b6b;--line:#e6e2da;--bg:#faf8f4;--card:#fff;--acc:#e4572e;--a2:#1f6f8b;--ok:#2e7d32;--warn:#c9a227;--bad:#8c8c8c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+header{background:var(--ink);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{margin:0;font-size:18px;font-weight:700}
+header select,header button,header input{font:inherit;padding:7px 10px;border-radius:6px;border:1px solid #444;background:#222;color:#fff}
+header button.acc{background:var(--acc);border-color:var(--acc)}
+header .sp{flex:1}
+nav.tabs{display:flex;gap:4px;padding:10px 20px 0;border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+nav.tabs button{font:inherit;padding:9px 14px;border:0;background:transparent;border-bottom:2px solid transparent;cursor:pointer;color:var(--muted);font-weight:600}
+nav.tabs button.on{color:var(--ink);border-bottom-color:var(--acc)}
+main{padding:18px 20px 60px;max-width:1400px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi b{display:block;font-size:28px;line-height:1}.kpi span{color:var(--muted);font-size:12px}
+.kpi.hot b{color:var(--acc)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13px}
+th{background:#f3f0ea;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);position:sticky;top:46px}
+tr:hover td{background:#fcfaf6}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:600;background:#eee}
+.s-hot,.s-call-booked,.s-won{background:#fde3dc;color:#8a2a16}.s-warm,.s-replied{background:#fff1cc;color:#6b4e00}.s-clicked,.s-opened{background:#e3f0f4;color:#1f4f5f}.s-do-not-contact,.s-lost{background:#333;color:#fff}
+td select,td input,td textarea{font:inherit;font-size:13px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:#fff;width:100%}
+td textarea{min-height:52px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.filters select,.filters input{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.btn{font:inherit;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
+.btn.acc{background:var(--acc);color:#fff;border-color:var(--acc)}
+.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}.bar i{display:block;height:14px;background:var(--a2);border-radius:3px}
+.reply{white-space:pre-wrap;background:#f7f5f0;border-left:3px solid var(--line);padding:8px 10px;border-radius:0 6px 6px 0;font-size:13px;max-height:140px;overflow:auto}
+.toast{position:fixed;bottom:16px;right:16px;background:var(--ink);color:#fff;padding:10px 14px;border-radius:8px;display:none}
+dialog{border:1px solid var(--line);border-radius:12px;padding:18px;max-width:560px;width:95vw}
+dialog label{display:block;font-weight:600;margin:10px 0 4px}dialog input,dialog select,dialog textarea{width:100%;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:6px}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}th{position:static}main{padding:12px}}
+</style></head><body>
+<header>
+  <h1>Leads</h1>
+  <select id="client"></select>
+  <button onclick="newClient()">+ client</button>
+  <span class="sp"></span>
+  <button onclick="openImport()">Import CSV</button>
+  <button onclick="sync()">Sync Instantly</button>
+  <a class="btn" id="csvlink" href="#" style="color:#fff;background:#222;border-color:#444">Export CSV</a>
+  <button class="acc" onclick="load()">Reload</button>
+</header>
+<nav class="tabs">
+  <button class="on" data-v="today" onclick="show('today')">Today</button>
+  <button data-v="pipeline" onclick="show('pipeline')">Pipeline</button>
+  <button data-v="replies" onclick="show('replies')">Replies</button>
+  <button data-v="tests" onclick="show('tests')">Tests</button>
+  <button data-v="all" onclick="show('all')">All leads</button>
+  <button data-v="dnc" onclick="show('dnc')">Do not contact</button>
+</nav>
+<main>
+  <div class="kpis" id="kpis"></div>
+  <div id="view"></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<dialog id="dlgImport">
+  <h3 style="margin:0 0 6px">Import CSV</h3>
+  <p class="muted" style="margin:0 0 8px">A lead list (email, first, last, company, title, segment, signal…) or an Instantly Activity export (Date, Action, Sender Email, Recipient Email, Step). Columns are matched by name.</p>
+  <label>Campaign name (optional)</label><input id="impCampaign" placeholder="HEDWIG campaign 1">
+  <label>Paste CSV</label><textarea id="impCsv" rows="10"></textarea>
+  <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="dlgImport.close()">Cancel</button><button class="btn acc" onclick="doImport()">Import</button></div>
+</dialog>
+
+<dialog id="dlgTest">
+  <h3 style="margin:0 0 6px">New test</h3>
+  <label>Name</label><input id="tName" placeholder="Physician opener vs plain">
+  <label>Hypothesis</label><input id="tHyp" placeholder="The physician line lifts reply rate on medtech">
+  <label>Variable</label><select id="tVar"><option>opener</option><option>segment</option><option>signal</option><option>sequence</option><option>asset</option><option>send-time</option><option>sender</option></select>
+  <label>Variants (comma separated)</label><input id="tVariants" placeholder="A, B">
+  <label>Metric</label><select id="tMetric"><option value="reply_rate">reply rate</option><option value="positive_rate">positive reply rate</option><option value="click_rate">click rate</option></select>
+  <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="dlgTest.close()">Cancel</button><button class="btn acc" onclick="saveTest()">Create</button></div>
+</dialog>
+
+<script>
+const STATUSES=["not-contacted","contacted","opened","clicked","replied","warm","hot","call-booked","won","lost","do-not-contact"];
+const STAGES=["step1","step2","step3","in-conversation","handed-off","closed"];
+let DATA=null, VIEW='today', CLIENT=localStorage.getItem('leads.client')||'hedwig';
+const $=s=>document.querySelector(s);
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2600)};
+const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pill=s=>`<span class="pill s-${s}">${s}</span>`;
+const today=()=>new Date().toISOString().slice(0,10);
+
+async function api(path,body){const r=await fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});return r.json();}
+
+async function loadClients(){const r=await api('/api/leads/clients');const sel=$('#client');sel.innerHTML='';(r.clients||['hedwig']).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c.toUpperCase();if(c===CLIENT)o.selected=true;sel.appendChild(o)});sel.onchange=()=>{CLIENT=sel.value;localStorage.setItem('leads.client',CLIENT);load()};}
+async function newClient(){const c=prompt('Client slug (e.g. acme-health)');if(!c)return;const n=prompt('Display name',c.toUpperCase())||c;await api('/api/leads/clients',{client:c,name:n});CLIENT=c.toLowerCase().replace(/[^a-z0-9-]/g,'-');localStorage.setItem('leads.client',CLIENT);await loadClients();load();}
+
+async function load(){DATA=await api('/api/leads/'+CLIENT);$('#csvlink').href='/tools/leads.csv?client='+CLIENT;if(DATA.storage_error)toast('Storage: '+DATA.storage_error);render();}
+function show(v){VIEW=v;document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));render();}
+
+function render(){if(!DATA)return;const S=DATA.summary,bs=S.by_status;
+  $('#kpis').innerHTML=[['Total',S.total,''],['Not contacted',bs['not-contacted'],''],['Contacted',bs.contacted+bs.opened+bs.clicked,''],['Replied',bs.replied,''],['Warm',bs.warm,''],['Hot',bs.hot+bs['call-booked'],'hot'],['Won',bs.won,'']].map(([l,v,c])=>`<div class="kpi ${c}"><b>${v||0}</b><span>${l}</span></div>`).join('');
+  ({today:vToday,pipeline:vPipeline,replies:vReplies,tests:vTests,all:vAll,dnc:vDnc})[VIEW]();}
+
+function row(L,cols){return `<tr data-e="${esc(L.email)}">${cols.map(c=>`<td>${c(L)}</td>`).join('')}</tr>`}
+const cName=L=>`<b>${esc(L.first||'')} ${esc(L.last||'')}</b><br><span class="muted">${esc(L.company||'')} · ${esc(L.title||'')}</span><br><span class="muted">${esc(L.email)}</span>`;
+const cStatus=L=>`<select onchange="edit('${esc(L.email)}','status',this.value)">${STATUSES.map(s=>`<option ${s===L.status?'selected':''}>${s}</option>`).join('')}</select>`;
+const cStage=L=>`<select onchange="edit('${esc(L.email)}','stage',this.value)">${STAGES.map(s=>`<option ${s===L.stage?'selected':''}>${s}</option>`).join('')}</select>`;
+const cNext=L=>`<input value="${esc(L.next_action||'')}" placeholder="next action" onchange="edit('${esc(L.email)}','next_action',this.value)"><input type="date" value="${esc(L.next_due||'')}" onchange="edit('${esc(L.email)}','next_due',this.value)" style="margin-top:4px">`;
+const cNotes=L=>`<textarea onchange="edit('${esc(L.email)}','notes',this.value)" placeholder="notes">${esc(L.notes||'')}</textarea>`;
+const cMeta=L=>`${esc(L.segment||'—')}<br><span class="muted">${esc(L.signal||'')} · ${esc(L.campaign||'')}</span><br><span class="muted">${esc(L.inbox||'')}</span>`;
+const cLast=L=>`<span class="muted">sent ${esc((L.last_sent||'').slice(0,10))}<br>event ${esc((L.last_event||'').slice(0,10))}</span>`;
+
+function table(rows,heads,cols){return `<table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(L=>row(L,cols)).join('')||'<tr><td colspan="9" class="muted">Nothing here.</td></tr>'}</tbody></table>`}
+const rank=s=>STATUSES.indexOf(s);
+
+function vToday(){const t=today();const rows=DATA.leads.filter(L=>L.next_due&&L.next_due<=t&&L.status!=='do-not-contact').sort((a,b)=>rank(b.status)-rank(a.status));
+  $('#view').innerHTML=`<p class="muted">${rows.length} owed a touch today or overdue.</p>`+table(rows,['Lead','Status','Stage','Next','Last','Notes'],[cName,cStatus,cStage,cNext,cLast,cNotes]);}
+function vPipeline(){const S=DATA.summary;const bars=(obj)=>{const m=Math.max(1,...Object.values(obj));return Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="bar"><span style="width:160px">${esc(k)}</span><i style="width:${Math.round(100*v/m)}%;max-width:60%"></i><span>${v}</span></div>`).join('')};
+  $('#view').innerHTML=`<div class="grid2"><div class="card"><h3 style="margin:0 0 8px">By status</h3>${bars(S.by_status)}</div><div class="card"><h3 style="margin:0 0 8px">By segment</h3>${bars(S.by_segment)}</div><div class="card"><h3 style="margin:0 0 8px">By signal</h3>${bars(S.by_signal)}</div><div class="card"><h3 style="margin:0 0 8px">Updated</h3><p class="muted">${esc(DATA.updated||'')}</p><p class="muted">Set INSTANTLY_API_KEY in Vercel and press Sync Instantly, or Import the Activity CSV.</p></div></div>`;}
+function vReplies(){const rows=DATA.leads.filter(L=>(L.reply_count||0)>0||rank(L.status)>=rank('replied')).filter(L=>L.status!=='do-not-contact').sort((a,b)=>(b.last_event||'').localeCompare(a.last_event||''));
+  const cReply=L=>`<div class="reply">${esc(L.last_reply_text||'(reply text not synced yet)')}</div>`;
+  const cOurs=L=>`<textarea onchange="edit('${esc(L.email)}','our_last_reply_text',this.value)" placeholder="what we replied">${esc(L.our_last_reply_text||'')}</textarea>`;
+  $('#view').innerHTML=`<p class="muted">${rows.length} people have written back. Reply the same day.</p>`+table(rows,['Lead','Their last message','What we replied','Status','Stage','Next'],[cName,cReply,cOurs,cStatus,cStage,cNext]);}
+function vTests(){const T=Object.values(DATA.tests||{});
+  const cards=T.map(t=>{const st=t.stats||{};const m=t.metric||'reply_rate';return `<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b style="font-size:16px">${esc(t.name)}</b><br><span class="muted">${esc(t.variable)} · ${esc(t.hypothesis||'')}</span></div><div>${t.decision?`<span class="pill s-won">decided: ${esc(t.decision)}</span>`:`<button class="btn" onclick="decide('${esc(t.id)}')">Decide</button>`}</div></div>
+    <table style="margin-top:10px"><thead><tr><th>Variant</th><th>Leads</th><th>Contacted</th><th>Clicked</th><th>Replied</th><th>Positive</th><th>Reply %</th><th>Positive %</th></tr></thead><tbody>${Object.entries(st).map(([v,s])=>`<tr><td><b>${esc(v)}</b></td><td>${s.n}</td><td>${s.contacted}</td><td>${s.clicked}</td><td>${s.replied}</td><td>${s.positive}</td><td ${m==='reply_rate'?'style="font-weight:700"':''}>${s.reply_rate}%</td><td ${m==='positive_rate'?'style="font-weight:700"':''}>${s.positive_rate}%</td></tr>`).join('')}</tbody></table>
+    <p class="muted" style="margin:8px 0 0">Assign leads to a variant in All leads → test column. Numbers update live.</p></div>`}).join('');
+  $('#view').innerHTML=`<div style="margin-bottom:12px"><button class="btn acc" onclick="dlgTest.showModal()">+ New test</button></div>`+(cards||'<p class="muted">No tests yet. Create one, then tag leads with a variant.</p>');}
+function vAll(){const f=window._f||{};const opts=(arr,cur)=>`<option value="">all</option>`+arr.map(x=>`<option ${x===cur?'selected':''}>${x}</option>`).join('');
+  const segs=[...new Set(DATA.leads.map(L=>L.segment).filter(Boolean))],sigs=[...new Set(DATA.leads.map(L=>L.signal).filter(Boolean))],camps=[...new Set(DATA.leads.map(L=>L.campaign).filter(Boolean))];
+  const tests=Object.values(DATA.tests||{});
+  let rows=DATA.leads.filter(L=>(!f.q||JSON.stringify(L).toLowerCase().includes(f.q))&&(!f.status||L.status===f.status)&&(!f.segment||L.segment===f.segment)&&(!f.signal||L.signal===f.signal)&&(!f.campaign||L.campaign===f.campaign)).sort((a,b)=>rank(b.status)-rank(a.status));
+  const cTest=L=>`<select onchange="edit('${esc(L.email)}','test_variant',this.value)"><option value="">—</option>${tests.flatMap(t=>(t.variants||[]).map(v=>`<option value="${esc(v)}" ${L.test_variant===v?'selected':''}>${esc(t.name)}: ${esc(v)}</option>`)).join('')}</select>`;
+  const cSeg=L=>`<input value="${esc(L.segment||'')}" placeholder="segment" onchange="edit('${esc(L.email)}','segment',this.value)"><input value="${esc(L.signal||'')}" placeholder="signal" onchange="edit('${esc(L.email)}','signal',this.value)" style="margin-top:4px">`;
+  $('#view').innerHTML=`<div class="filters"><input placeholder="search" value="${esc(f.q||'')}" oninput="setF('q',this.value.toLowerCase())"><select onchange="setF('status',this.value)">${opts(STATUSES,f.status)}</select><select onchange="setF('segment',this.value)">${opts(segs,f.segment)}</select><select onchange="setF('signal',this.value)">${opts(sigs,f.signal)}</select><select onchange="setF('campaign',this.value)">${opts(camps,f.campaign)}</select><span class="muted" style="align-self:center">${rows.length} of ${DATA.leads.length}</span><button class="btn" onclick="addLead()">+ lead</button></div>`
+    +table(rows.slice(0,500),['Lead','Segment / signal','Campaign / inbox','Status','Stage','Test','Next','Notes'],[cName,cSeg,cMeta,cStatus,cStage,cTest,cNext,cNotes])+(rows.length>500?'<p class="muted">Showing first 500. Filter to see the rest.</p>':'');}
+function vDnc(){const rows=DATA.leads.filter(L=>L.status==='do-not-contact');$('#view').innerHTML=`<p class="muted">${rows.length} people asked out or must not be contacted. These never leave this list.</p>`+table(rows,['Lead','Why','Status'],[cName,cNotes,cStatus]);}
+function setF(k,v){window._f=window._f||{};window._f[k]=v;vAll();}
+
+let pending={},timer=null;
+function edit(email,field,value){pending[email]=pending[email]||{email};pending[email][field]=value;const L=DATA.leads.find(x=>x.email===email);if(L)L[field]=value;clearTimeout(timer);timer=setTimeout(flush,600);}
+async function flush(){const batch=Object.values(pending);pending={};if(!batch.length)return;const r=await api('/api/leads/'+CLIENT+'/upsert',{leads:batch});toast(r.ok?`Saved ${r.upserted}`:'Save failed: '+r.error);if(r.ok){DATA.summary=null;}}
+async function addLead(){const e=prompt('Email');if(!e)return;const r=await api('/api/leads/'+CLIENT+'/upsert',{leads:[{email:e,first:prompt('First name')||'',company:prompt('Company')||''}]});toast(r.ok?'Added':'Failed: '+r.error);load();}
+function openImport(){dlgImport.showModal()}
+async function doImport(){const r=await api('/api/leads/'+CLIENT+'/import',{csv:$('#impCsv').value,campaign:$('#impCampaign').value});dlgImport.close();toast(r.ok?`Imported ${r.new} new, ${r.updated} updated`:'Import failed: '+r.error);load();}
+async function sync(){toast('Syncing…');const r=await api('/api/leads/'+CLIENT+'/sync',{});toast(r.ok?`Synced ${r.campaigns} campaigns, ${r.leads} leads, ${r.emails} replies${r.errors&&r.errors.length?' · '+r.errors.length+' errors':''}`:'Sync failed: '+r.error);if(r.errors&&r.errors.length)console.warn(r.errors);load();}
+async function saveTest(){const variants=$('#tVariants').value.split(',').map(s=>s.trim()).filter(Boolean);if(!$('#tName').value||variants.length<2){toast('Need a name and at least two variants');return}
+  const r=await api('/api/leads/'+CLIENT+'/tests',{name:$('#tName').value,hypothesis:$('#tHyp').value,variable:$('#tVar').value,variants,metric:$('#tMetric').value,start:today()});dlgTest.close();toast(r.ok?'Test created':'Failed: '+r.error);load();}
+async function decide(id){const d=prompt('Decision (what you chose and why)');if(!d)return;await api('/api/leads/'+CLIENT+'/tests',{id,decision:d,end:today()});load();}
+
+loadClients().then(load);
+</script>
+</body></html>
