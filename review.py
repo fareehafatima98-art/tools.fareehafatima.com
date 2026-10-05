@@ -246,7 +246,7 @@ SCOPE DISCIPLINE
 
 VOICE
 - Write as a colleague who read carefully, not a consultant grading homework.
-- Frame every gap as cheap to test rather than broken.
+- State the gap plainly. Never say a fix is cheap to test, worth testing, not a new claim, not a new result, or any other reassurance about effort. Say what they say now, why it costs replies, and what to say instead.
 - No em dashes. No exclamation marks. American spelling."""
 
 SCORECARD_PROMPT = """Here is what the company states about its own offer, extracted from its website.
@@ -256,7 +256,7 @@ EXTRACT:
 {extract}
 
 Score all ten criteria, then choose the TWO changes that would most improve the reply rate of a
-cold email campaign and are cheapest to test. Both must be about who to target, what to say,
+cold email campaign. Both must be about who to target, what to say,
 what to ask for, or what proof to show.
 
 Return strict JSON:
@@ -264,10 +264,11 @@ Return strict JSON:
   "scores": {{"1": n, "2": n, "3": n, "4": n, "5": n, "6": n, "7": n, "8": n, "9": n, "10": n}},
   "notes": {{"1": "one line citing what you saw", ...one per criterion...}},
   "verdict": "one sentence, under 16 words, the honest headline for this company's outbound readiness, no company name",
-  "summary": "three sentences addressed to the reader as 'you'. First: what is strongest, cited. Second: the gap that costs the most replies. Third: what the two changes below would do. No em dashes, no exclamation marks.",
+  "strengths": ["two criterion numbers (as strings) where the site is strongest"],
+  "summary": "one sentence addressed to the reader as 'you': what is strongest and what costs the most replies. No em dashes, no exclamation marks.",
   "suggestions": [
     {{"title": "the gap, stated as a sentence, no colon, under 14 words",
-      "body": "2 to 3 sentences. Name what they currently say, why it costs them replies with this buyer, and what shape the fix takes. Do not prescribe exact copy."}},
+      "body": "2 to 3 sentences. Quote or closely paraphrase what the site says now, say why a VP Sales or CRO reading it cold would not reply, and say what to change. No sentence about how cheap, easy, or low-effort the change is. Do not write the new copy for them."}},
     {{"title": "...", "body": "..."}}
   ]
 }}
@@ -318,6 +319,7 @@ def generate_scorecard(domain: str, first_name: str = "", last_name: str = "",
         "band": "ready" if total >= 35 else ("close" if total >= 20 else "early"),
         "verdict": scored.get("verdict", ""),
         "summary": scored.get("summary", ""),
+        "strengths": [str(x) for x in (scored.get("strengths") or [])][:2],
         "_scores": scores,
         "_notes": scored.get("notes", {}),
         "_extract": extract,
