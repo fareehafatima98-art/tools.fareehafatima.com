@@ -258,6 +258,12 @@ def thumb_form(request: Request):
         "X-Robots-Tag": "noindex"
     })
 
+@app.get("/tools/scorecard", response_class=HTMLResponse)
+def scorecard_form(request: Request):
+    if not _check_auth(request):
+        return RedirectResponse("/login?next=/tools/scorecard", status_code=302)
+    return HTMLResponse(_read_web("tools/scorecard.html"), headers={"X-Robots-Tag": "noindex"})
+
 @app.get("/tools/review", response_class=HTMLResponse)
 def review_form(request: Request):
     """Offer Review tool form."""

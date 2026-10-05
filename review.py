@@ -1,5 +1,5 @@
 """
-Offer review pipeline.
+Outbound Readiness Score (HEDWIG) and legacy offer-review pipeline.
 
 Ported from "GTM Consulting Campaign/SYSTEM/OFFER REVIEW SYSTEM/generate_reviews.py".
 This module scrapes a company site, extracts offer facts with Haiku, scores with
@@ -263,6 +263,8 @@ Return strict JSON:
 {{
   "scores": {{"1": n, "2": n, "3": n, "4": n, "5": n, "6": n, "7": n, "8": n, "9": n, "10": n}},
   "notes": {{"1": "one line citing what you saw", ...one per criterion...}},
+  "verdict": "one sentence, under 16 words, the honest headline for this company's outbound readiness, no company name",
+  "summary": "three sentences addressed to the reader as 'you'. First: what is strongest, cited. Second: the gap that costs the most replies. Third: what the two changes below would do. No em dashes, no exclamation marks.",
   "suggestions": [
     {{"title": "the gap, stated as a sentence, no colon, under 14 words",
       "body": "2 to 3 sentences. Name what they currently say, why it costs them replies with this buyer, and what shape the fix takes. Do not prescribe exact copy."}},
@@ -313,6 +315,9 @@ def generate_scorecard(domain: str, first_name: str = "", last_name: str = "",
         "sources": [domain],
         "criteria": SCORECARD_CRITERIA,
         "total": total,
+        "band": "ready" if total >= 35 else ("close" if total >= 20 else "early"),
+        "verdict": scored.get("verdict", ""),
+        "summary": scored.get("summary", ""),
         "_scores": scores,
         "_notes": scored.get("notes", {}),
         "_extract": extract,
