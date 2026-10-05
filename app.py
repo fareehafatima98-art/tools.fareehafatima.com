@@ -261,8 +261,9 @@ def thumb_form(request: Request):
 @app.get("/tools/scorecard", response_class=HTMLResponse)
 def scorecard_form(request: Request):
     if not _check_auth(request):
-        return RedirectResponse("/login?next=/tools/scorecard", status_code=302)
-    return HTMLResponse(_read_web("tools/scorecard.html"), headers={"X-Robots-Tag": "noindex"})
+        return RedirectResponse("/login", status_code=302)
+    html = (HERE / "web" / "tools" / "scorecard.html").read_text(encoding="utf-8")
+    return HTMLResponse(html, headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
 
 @app.get("/tools/review", response_class=HTMLResponse)
 def review_form(request: Request):
