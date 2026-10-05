@@ -128,8 +128,8 @@ function showResult(data) {
   const sorted = Object.entries(scores).map(([k,v]) => ({k,v})).sort((a,b) => a.v - b.v);
   const lowSet = new Set(sorted.slice(0,2).map(x => x.k));
 
-  const CRITERIA = ['Dream outcome','Likelihood','Speed to value','Effort and sacrifice','Risk reversal',
-    'Specific outcome','Cost vs value','Proof and differentiation','Offer clarity','Urgency'];
+  const CRITERIA = r.criteria || ['Buyer named','Offer in one sentence','Outcome is a number','Proof a cold reader believes','Speed to first value',
+    'Low-friction first step','Risk removed','Differentiation in a sentence','One conversion path','Reason to act now'];
 
   let scoresHTML = Object.entries(scores).map(([k,v]) => {
     const low = lowSet.has(k);

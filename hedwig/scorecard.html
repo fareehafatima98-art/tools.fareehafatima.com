@@ -1,139 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="blob-base" content="https://gzbaq0nk2iyh6nku.public.blob.vercel-storage.com">
 <title>Outbound Readiness Score — HEDWIG</title>
-<link rel="stylesheet" href="styles.css">
 <style>
-.sc-head{display:grid;grid-template-columns:72px 1fr auto;gap:20px;align-items:center;padding:48px 0 28px}
-.sc-head .logo{width:72px;height:72px;border-radius:14px;border:1px solid var(--line);background:#fff;object-fit:contain;padding:8px}
-.sc-head .mono{width:72px;height:72px;border-radius:14px;background:var(--acc2);color:#fff;font:700 26px Georgia,serif;display:flex;align-items:center;justify-content:center}
-.sc-head h1{font-size:36px;line-height:1.1}
-.sc-head .for{color:var(--muted);font-size:15px;margin-top:4px}
-.total{text-align:right}
-.total b{display:block;font:700 56px/1 Georgia,serif}
-.total span{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.band{display:inline-block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:5px 10px;border-radius:999px;margin-top:8px}
-.band.early{background:#fbe6e1;color:var(--acc)}.band.close{background:#fdf1d6;color:#8a5a00}.band.ready{background:#e2efe4;color:#1e6b3a}
-.verdict{font-family:Georgia,serif;font-size:26px;line-height:1.3;margin:10px 0 14px;max-width:30ch}
-.summary{font-size:18px;color:var(--ink);max-width:62ch}
-.video{margin:30px 0 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9}
-.video video,.video iframe{width:100%;height:100%;display:block;border:0}
-.caption{color:var(--muted);font-size:14px;margin-top:8px}
-table.scores{width:100%;border-collapse:collapse;margin:14px 0 6px;font-size:15.5px}
-table.scores td{padding:12px 8px;border-top:1px solid var(--line);vertical-align:top}
-table.scores td.c{width:42%;font-weight:600}
-table.scores td.s{width:110px;white-space:nowrap}
-.pips{display:inline-flex;gap:4px;vertical-align:middle;margin-right:8px}
-.pips i{width:12px;height:12px;border-radius:3px;background:var(--line);display:inline-block}
-.pips i.on{background:var(--acc2)}
-.pips.low i.on{background:var(--acc)}
-table.scores td.note{color:var(--muted);font-size:14.5px}
-.fix{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;margin:16px 0}
-.fix h3{margin:0 0 8px;font-size:21px}
-.fix p{margin:0;color:var(--ink)}
-.fine{color:var(--muted);font-size:13.5px}
-.err{padding:80px 0;text-align:center;color:var(--muted)}
-@media (max-width:720px){.sc-head{grid-template-columns:56px 1fr;}.total{grid-column:1/-1;text-align:left}.sc-head h1{font-size:28px}.verdict{font-size:22px}table.scores td.c{width:50%}table.scores td.note{display:block;padding-top:0;border:0}table.scores tr{display:block;border-top:1px solid var(--line)}table.scores td{border:0}}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;600;700;800&display=swap');
+:root{--ink:#1a1a1a;--paper:#fbf9f5;--acid:#b5422a;--acidtext:#fff;--signal:#b5422a;--navy:#1f3a5f;--muted:#5f5f5f;--line:#e8e3da;--rail:#e8e3da;--card:#fff;--deck:#1a1a1a;--decktext:#fbf9f5;--deckacc:#f0b7a8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Manrope,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(920px,calc(100% - 40px));margin:0 auto}
+.kicker{font:500 11px 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.hero{padding:30px 0 26px}
+.hero .brand{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.hero .brand img{width:30px;height:30px;border-radius:7px}
+.hero .brand .hw{font-family:Georgia,serif;font-weight:700;font-size:18px;color:var(--ink);margin-right:6px}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(32px,6vw,54px);line-height:1.05;letter-spacing:-.02em;margin:0 0 18px;max-width:760px}
+.sub{font-size:17px;line-height:1.6;color:#4a4a4a;max-width:600px;margin:0}
+.section{padding:44px 0 0}
+.made{font:500 11px 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--signal);margin:0 0 8px}
+.h2{font-family:Georgia,serif;font-weight:700;font-size:clamp(23px,3.6vw,32px);letter-spacing:-.02em;margin:0 0 20px}
+.vframe{background:var(--deck);border-radius:20px;padding:clamp(10px,2.4vw,20px)}
+.vplayer{position:relative;border-radius:12px;overflow:hidden;background:var(--deck);aspect-ratio:16/9}
+.shot{position:absolute;inset:0;overflow:hidden}
+.shot img{width:100%;display:block;animation:pan 26s ease-in-out infinite alternate}
+@keyframes pan{from{transform:translateY(0)}to{transform:translateY(-58%)}}
+.shot:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,26,.28),rgba(26,26,26,0) 30%,rgba(26,26,26,0) 60%,rgba(26,26,26,.45))}
+.slides{position:absolute;inset:0;z-index:1;background:var(--deck);opacity:0;pointer-events:none;transition:opacity .9s ease}
+.slides.act{opacity:1}
+.slide{position:absolute;inset:0;padding:clamp(18px,4vw,44px) clamp(18px,4vw,44px) clamp(40px,6vw,60px);display:flex;flex-direction:column;justify-content:center;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility 0s .5s}
+.slide.on{opacity:1;visibility:visible;transition:opacity .5s ease}
+.slide .ix{font:500 12px 'DM Mono',monospace;letter-spacing:.14em;color:var(--deckacc);margin-bottom:12px;opacity:0;transform:translateY(10px)}
+.slide .tt{font-family:Georgia,serif;font-weight:700;font-size:clamp(22px,4.4vw,44px);letter-spacing:-.02em;color:var(--decktext);margin-bottom:20px;max-width:78%;opacity:0;transform:translateY(12px)}
+.slide .cells{display:flex;gap:8px;max-width:min(440px,62%);margin-bottom:18px}
+.slide .cells i{flex:1;height:14px;border-radius:3px;background:#333;display:block;transform:scaleX(0);transform-origin:left}
+.slide .cells i.f{background:#8fb39a}
+.slide.low .cells i.f{background:var(--deckacc)}
+.slide .nt{font-size:clamp(12px,1.8vw,15px);line-height:1.6;color:#b9b4ab;max-width:72%;opacity:0;transform:translateY(10px)}
+.slide.low .tt{color:var(--deckacc)}
+.slide.on .ix{animation:rise .5s ease .1s both}
+.slide.on .tt{animation:rise .55s ease .22s both}
+.slide.on .nt{animation:rise .55s ease .5s both}
+.slide.on .cells i{animation:grow .35s ease both}
+.slide.on .cells i:nth-child(1){animation-delay:.4s}
+.slide.on .cells i:nth-child(2){animation-delay:.48s}
+.slide.on .cells i:nth-child(3){animation-delay:.56s}
+.slide.on .cells i:nth-child(4){animation-delay:.64s}
+.slide.on .cells i:nth-child(5){animation-delay:.72s}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.dots{position:absolute;left:clamp(18px,4vw,44px);bottom:16px;display:flex;gap:7px;z-index:2}
+.dots i{width:7px;height:7px;border-radius:50%;background:#3a3a3a;display:block;transition:background .3s,transform .3s}
+.dots i.on{background:var(--deckacc);transform:scale(1.25)}
+.vtag{position:absolute;top:14px;left:16px;z-index:2;font:500 10px 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--decktext);background:rgba(26,26,26,.72);padding:6px 10px;border-radius:6px}
+.fb{position:absolute;right:16px;bottom:14px;z-index:3;width:clamp(120px,32%,215px);aspect-ratio:1;border-radius:50%;overflow:hidden;border:3px solid var(--deckacc);cursor:pointer;background:#000;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.fb video{width:100%;height:100%;object-fit:cover;display:block}
+.fb .tap{position:absolute;inset:auto 0 8px 0;text-align:center;font:600 10px Manrope,sans-serif;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.85);pointer-events:none}
+.vbar{display:none;align-items:center;gap:10px;margin-top:12px}
+.vbar.on{display:flex}
+.vbar .t{flex:1;height:5px;border-radius:3px;background:var(--rail);position:relative;cursor:pointer}
+.vbar .t i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--acid);width:0;display:block}
+.vbar span{font:500 11px 'DM Mono',monospace;color:var(--muted);min-width:34px}
+.vcta{display:flex;justify-content:center;margin-top:16px}
+.vcta a{background:var(--acid);color:var(--acidtext);font-weight:800;font-size:15px;padding:14px 26px;border-radius:8px}
+.board{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+.rw{display:flex;align-items:center;gap:12px;padding:8px 0}
+.rw+.rw{border-top:1px dashed var(--line)}
+.rw .nm{flex:0 0 clamp(120px,26%,215px);font-size:13.5px;color:#3c3d38}
+.rw .cells{flex:1;display:flex;gap:5px}
+.rw .cells i{flex:1;height:10px;border-radius:2px;background:var(--rail);display:block}
+.rw .cells i.f{background:var(--navy)}
+.rw.low .cells i.f{background:var(--signal)}
+.rw .vl{flex:0 0 20px;text-align:right;font:500 12px 'DM Mono',monospace;color:#3c3d38}
+.rw.low .nm,.rw.low .vl{color:var(--signal);font-weight:700}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 4px;border-top:1px solid var(--line);margin-top:10px}
+.total b{font-family:Georgia,serif;font-size:30px}
+.total span{font:500 11px 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.read{display:flex;gap:14px;background:var(--card);border-left:4px solid var(--signal);border-radius:0 16px 16px 0;padding:18px 20px;margin-top:18px}
+.read .lbl{font:500 10px 'DM Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--signal);margin-bottom:8px}
+.read p{margin:0 0 9px;font-size:14.5px;line-height:1.6;color:#4a4a4a}
+.read p:last-child{margin:0}
+.read b{color:var(--ink)}
+.fix{display:grid;grid-template-columns:46px 1fr;gap:16px;padding:22px 0;border-top:1px solid var(--line)}
+.fix:first-of-type{border-top:0;padding-top:6px}
+.fix .dot{width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--deckacc);display:grid;place-items:center;font:500 13px 'DM Mono',monospace}
+.fix h3{margin:4px 0 8px;font-size:18.5px;font-weight:800;letter-spacing:-.01em;line-height:1.3}
+.fix p{margin:0;font-size:15px;line-height:1.65;color:#4a4a4a;max-width:660px}
+.ctaband{margin:56px 0 0;background:var(--ink);color:var(--paper);border-radius:24px;padding:clamp(26px,5vw,52px);text-align:center}
+.ctaband .pill{display:inline-block;background:var(--acid);color:var(--acidtext);border-radius:999px;padding:11px 22px;font-weight:800;font-size:14px;margin-bottom:20px}
+.ctaband h2{font-family:Georgia,serif;font-weight:700;font-size:clamp(26px,4.6vw,40px);letter-spacing:-.02em;margin:0 0 14px}
+.ctaband>p{margin:0 auto 6px;font-size:15.5px;line-height:1.6;color:#c6c7c0;max-width:620px}
+.ctaband .terms{font-weight:700;font-size:15px;margin:16px 0 8px}
+.calwrap{background:#fff;border-radius:16px;margin-top:22px;overflow:hidden}
+.contact{margin-top:16px;font:12px 'DM Mono',monospace;color:#8f9088}
+.contact a{border-bottom:1px solid #55564f}
+.foot{padding:26px 0 44px;text-align:center;font:11px 'DM Mono',monospace;color:var(--muted)}
+.state{padding:90px 0;text-align:center;color:var(--muted);font-size:15px}
+@media(max-width:620px){.hero{padding:22px 0 18px}.fix{grid-template-columns:38px 1fr;gap:10px}}
 </style>
 </head>
 <body>
-<nav>
-  <a class="brand" href="index.html">HEDWIG</a>
-  <div class="links"><a href="case-study.html">Case study</a><a href="pricing.html">Pricing</a><a href="about.html">About</a><a class="btn" href="#book">Talk to Fareeha</a></div>
-</nav>
-
-<div class="wrap" id="app">
-  <div class="err">Loading your score…</div>
-</div>
-
-<footer>
-  <span>HEDWIG · a Fatima &amp; Co company</span>
-  <span><a href="mailto:hello@hedwigandco.com">hello@hedwigandco.com</a></span>
-</footer>
+<main id="root"><div class="wrap"><div class="state"><p>Loading your score…</p></div></div></main>
 
 <script>
-const BLOB = "https://gzbaq0nk2iyh6nku.public.blob.vercel-storage.com/scorecards/";
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const slug = (new URLSearchParams(location.search).get("c") || "").replace(/[^a-z0-9-]/g, "");
-const app = document.getElementById("app");
+var HOST='hedwigandco.com';
+var EMAIL='hello@hedwigandco.com';
+var CALENDLY='https://calendly.com/hifareeha/discovery-meeting-with-fareeha';
+var CRITERIA=['Buyer named','Offer in one sentence','Outcome is a number','Proof a cold reader believes','Speed to first value','Low-friction first step','Risk removed','Differentiation in a sentence','One conversion path','Reason to act now'];
 
-function pips(n){ n = Math.max(0, Math.min(5, parseInt(n) || 0));
-  return `<span class="pips ${n <= 1 ? "low" : ""}">${[0,1,2,3,4].map(i => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</span>${n}/5`; }
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function miss(m){document.getElementById('root').innerHTML='<div class="wrap"><div class="state"><p>'+esc(m)+'</p><p><a href="https://'+esc(HOST)+'" style="border-bottom:1px solid var(--ink)">'+esc(HOST)+'</a></p></div></div>';}
 
 function render(d){
-  const crit = d.criteria || [];
-  const scores = d._scores || {}, notes = d._notes || {};
-  const first = d.first_name ? ` for ${esc(d.first_name)}` : "";
-  const total = d.total ?? Object.values(scores).reduce((a,b) => a + (parseInt(b) || 0), 0);
-  const band = d.band || (total >= 35 ? "ready" : total >= 20 ? "close" : "early");
-  const bandLabel = {early: "Early", close: "Close", ready: "Ready"}[band];
-  document.title = `${d.company} — Outbound Readiness Score — HEDWIG`;
-  const logo = d.logo_url
-    ? `<img class="logo" src="${esc(d.logo_url)}" alt="" onerror="this.outerHTML='<div class=mono>${esc(d.monogram)}</div>'">`
-    : `<div class="mono">${esc(d.monogram)}</div>`;
-  const video = d.video_url
-    ? `<div class="video">${/youtube|youtu\.be|loom|vimeo/.test(d.video_url)
-        ? `<iframe src="${esc(d.video_url)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`
-        : `<video src="${esc(d.video_url)}" controls playsinline></video>`}</div>
-       <div class="caption">${esc(d.caption || "")}${d.video_length ? " · " + esc(d.video_length) : ""}</div>`
-    : "";
-  app.innerHTML = `
-  <div class="sc-head">
-    ${logo}
-    <div>
-      <div class="kicker">Outbound Readiness Score${first}</div>
-      <h1>${esc(d.company)}</h1>
-      <div class="for">Scored from ${esc((d.sources || [])[0] || "")} on ${esc(d.generated || "")}. Nothing here is invented: if the site does not say it, it counts as absent.</div>
-    </div>
-    <div class="total"><b>${total}<span style="font-size:22px;color:var(--muted)">/50</span></b><span>out of 50</span><br><span class="band ${band}">${bandLabel}</span></div>
-  </div>
+  var first=d.first_name||'there';
+  var domain=(d.sources&&d.sources[0])||'';
+  var crit=(d.criteria&&d.criteria.length===10)?d.criteria:CRITERIA;
+  var scores=d._scores||{},notes=d._notes||{};
+  var rows=crit.map(function(l,i){var v=Number(scores[String(i+1)]);return {l:l,v:isFinite(v)?v:0,i:i};});
+  var total=rows.reduce(function(a,r){return a+r.v;},0);
+  var low=rows.slice().sort(function(a,b){return a.v-b.v;}).slice(0,2).map(function(r){return r.i;}).sort(function(a,b){return a-b;});
 
-  <section style="padding-top:0">
-    ${d.verdict ? `<div class="verdict">${esc(d.verdict)}</div>` : ""}
-    ${d.summary ? `<p class="summary">${esc(d.summary)}</p>` : ""}
-    ${video}
-  </section>
+  var board=rows.map(function(r){
+    var cells='';for(var k=1;k<=5;k++)cells+='<i'+(k<=r.v?' class="f"':'')+'></i>';
+    return '<div class="rw'+(low.indexOf(r.i)>-1?' low':'')+'"><span class="nm">'+esc(r.l)+'</span><div class="cells">'+cells+'</div><span class="vl">'+r.v+'</span></div>';
+  }).join('');
+  board+='<div class="total"><span>Outbound Readiness Score</span><b>'+total+'<span style="font-size:14px;letter-spacing:0;color:var(--muted)"> / 50</span></b></div>';
 
-  <section>
-    <h2>The ten metrics</h2>
-    <p class="fine">Each one is a question a cold email has to answer before a stranger replies. Scored 0 to 5 from your public site only.</p>
-    <table class="scores">
-      ${crit.map((c, i) => `<tr><td class="c">${i + 1}. ${esc(c)}</td><td class="s">${pips(scores[String(i + 1)])}</td><td class="note">${esc(notes[String(i + 1)] || "")}</td></tr>`).join("")}
-    </table>
-  </section>
+  var readNotes=low.map(function(i){
+    var n=notes[String(i+1)];
+    return n?'<p><b>'+esc(crit[i])+'.</b> '+esc(n)+'</p>':'';
+  }).join('');
 
-  <section>
-    <h2>${esc(d.heading || "Two things that would lift your reply rate first")}</h2>
-    ${(d.suggestions || []).map(s => `<div class="fix"><h3>${esc(s.title)}</h3><p>${esc(s.body)}</p></div>`).join("")}
-    <p class="fine">Both are cheap to test. Neither needs a product change.</p>
-  </section>
+  var fixes=(d.suggestions||[]).slice(0,2).map(function(s,i){
+    return '<div class="fix"><div><div class="dot">0'+(i+1)+'</div></div><div><h3>'+esc(s.title)+'</h3><p>'+esc(s.body)+'</p></div></div>';
+  }).join('');
 
-  <section class="book" id="book" style="border:0">
-    <h2>Want the two changes run for you?</h2>
-    <div class="lines">
-      <p>HEDWIG builds and runs outbound for healthcare companies. You get qualified conversations in under 45 days. Your team closes them.</p>
-      <p>Pick a time with Fareeha, physician and founder. Bring this page.</p>
-    </div>
-    <div class="cal">
-      <div class="calendly-inline-widget" data-url="${esc(d.calendly || "https://calendly.com/hifareeha/discovery-meeting-with-fareeha")}?hide_gdpr_banner=1" style="min-width:320px;height:660px;"></div>
-    </div>
-    <p class="fine" style="margin-top:14px">Prefer email? <a href="mailto:hello@hedwigandco.com">hello@hedwigandco.com</a></p>
-  </section>`;
-  const s = document.createElement("script"); s.src = "https://assets.calendly.com/assets/external/widget.js"; s.async = true; document.body.appendChild(s);
+  var logo=domain?'<img src="https://www.google.com/s2/favicons?domain='+esc(domain)+'&sz=128" alt="" onerror="this.remove()"/>':'';
+  var shotUrl=domain?'https://s0.wp.com/mshots/v1/'+encodeURIComponent('https://'+domain)+'?w=1200&h=2400':'';
+  window.__shotUrl=shotUrl;
+  var video='<div class="vplayer">'+
+    (shotUrl?'<div class="shot" id="shot"></div>':'')+
+    '<div class="slides" id="slides"></div>'+
+    '<span class="vtag">'+esc(d.company)+' &middot; scored live</span>'+
+    (d.video_url?'<div class="fb" id="fb"><video id="rv" autoplay muted loop playsinline><source src="'+esc(/^https?:/.test(d.video_url)?d.video_url:'scorecard.mp4')+'" type="video/mp4"></video><div class="tap" id="fbt">tap for sound</div></div>':'')+
+    '</div>';
+
+  document.getElementById('root').innerHTML=
+    '<div class="wrap"><div class="hero">'+
+      '<div class="brand"><span class="hw">HEDWIG</span>'+logo+'<span class="kicker">'+esc(d.company)+' &middot; outbound readiness score</span></div>'+
+      '<h1>Hi '+esc(first)+', I ran '+esc(d.company)+' through our Outbound Readiness Score.</h1>'+
+      '<p class="sub">'+(d.summary?esc(d.summary):'Ten questions a cold email has to answer before a stranger replies, scored 0 to 5 from '+esc(d.company)+'&rsquo;s public site. Nothing here is guessed, every line cites your own website.')+' The video is about a minute.</p>'+
+    '</div>'+
+
+    ('<div class="section"><p class="made">Made for you</p><div class="h2">'+(d.verdict?esc(d.verdict):'The score for '+esc(d.company)+'.')+'</div><div class="vframe">'+video+'</div><div class="vbar" id="vbar"><span id="vnow">0:00</span><div class="t" id="vtrack"><i id="vfill"></i></div><span id="vtot">&ndash;:&ndash;</span></div><div class="vcta"><a href="#book">Book a free 30-minute call with Fareeha</a></div></div>')+
+
+    '<div class="section"><p class="made">The ten metrics</p>'+
+    '<div class="h2">Where your outbound is ready, and where it leaks.</div>'+
+    '<div class="board">'+board+'</div>'+
+    (readNotes?'<div class="read"><div><div class="lbl">The two leaks, in your site&rsquo;s own words</div>'+readNotes+'</div></div>':'')+
+    '</div>'+
+
+    '<div class="section"><p class="made">Two things I&rsquo;d change first</p>'+
+    '<div class="h2">Both lift reply rate. Neither touches the product.</div>'+fixes+'</div>'+
+
+    '<div class="ctaband" id="book">'+
+      '<span class="pill">Book a free 30-minute call</span>'+
+      '<h2>Thirty minutes on fixing it, not just finding it.</h2>'+
+      '<p>On the call we go through exactly how '+esc(d.company)+' turns these two changes into qualified conversations, without changing anything in the product. You keep every fix we discuss, and you decide if HEDWIG running your outbound is worth it. If it isn&rsquo;t a fit, I&rsquo;ll say so.</p>'+
+      '<p class="terms">Just 30 minutes of your time &middot; The fixes are yours either way.</p>'+
+      '<div class="calwrap"><div class="calendly-inline-widget" data-url="'+esc(d.calendly||CALENDLY)+'?hide_gdpr_banner=1" style="min-width:320px;height:660px;"></div></div>'+
+      '<div class="contact">Or just reply to my email, <a href="mailto:'+esc(EMAIL)+'">'+esc(EMAIL)+'</a></div>'+
+    '</div>'+
+
+    '<div class="foot">Built for '+esc(first)+' at '+esc(d.company)+' &middot; by Fareeha Fatima, physician and founder, HEDWIG &middot; '+esc(HOST)+'</div></div>';
+
+  var cal=document.createElement('script');
+  cal.src='https://assets.calendly.com/assets/external/widget.js';cal.async=true;
+  document.body.appendChild(cal);
+
+  var slidesBox=document.getElementById('slides');
+  if(slidesBox){
+    slidesBox.innerHTML=rows.map(function(r){
+      var cells='';for(var k=1;k<=5;k++)cells+='<i'+(k<=r.v?' class="f"':'')+'></i>';
+      var n=notes[String(r.i+1)]||'';
+      return '<div class="slide'+(low.indexOf(r.i)>-1?' low':'')+'"><div class="ix">'+('0'+(r.i+1)).slice(-2)+' / 10</div>'+
+             '<div class="tt">'+esc(r.l)+'</div><div class="cells">'+cells+'</div>'+
+             (n?'<div class="nt">'+esc(n)+'</div>':'')+'</div>';
+    }).join('');
+    slidesBox.insertAdjacentHTML('beforeend','<div class="dots">'+rows.map(function(){return '<i></i>';}).join('')+'</div>');
+    var slideEls=slidesBox.querySelectorAll('.slide');
+    var dotEls=slidesBox.querySelectorAll('.dots i');
+    var SITE_MS=5000, SLIDE_MS=4600, carT=null;
+    function showSlide(k){
+      slidesBox.classList.toggle('act', k>=0);
+      slideEls.forEach(function(s,i){s.classList.toggle('on',i===k);});
+      dotEls.forEach(function(dd,i){dd.classList.toggle('on',i===k);});
+    }
+    function runCarousel(){
+      clearTimeout(carT);
+      showSlide(-1);
+      var i=-1;
+      function next(){
+        i++;
+        if(i>=slideEls.length){runCarousel();return;}
+        showSlide(i);
+        carT=setTimeout(next, SLIDE_MS);
+      }
+      carT=setTimeout(next, SITE_MS);
+    }
+    runCarousel();
+    window.__restartCarousel=runCarousel;
+  }
+  var shotBox=document.getElementById('shot');
+  if(shotBox&&window.__shotUrl){
+    (function tryShot(n){
+      var im=new Image();
+      im.onload=function(){
+        if(im.naturalWidth<=420&&im.naturalHeight<=320&&n<10){setTimeout(function(){tryShot(n+1);},3500);return;}
+        im.alt='';shotBox.appendChild(im);im.style.opacity=0;im.style.transition='opacity .6s';
+        requestAnimationFrame(function(){im.style.opacity=1;});
+      };
+      im.onerror=function(){if(n<4)setTimeout(function(){tryShot(n+1);},4000);};
+      im.src=window.__shotUrl+(n?'&r='+n:'');
+    })(0);
+  }
+  var fb=document.getElementById('fb'),v=document.getElementById('rv'),ft=document.getElementById('fbt');
+  var bar=document.getElementById('vbar'),vf=document.getElementById('vfill'),
+      vn=document.getElementById('vnow'),vt=document.getElementById('vtot'),
+      vtr=document.getElementById('vtrack');
+  function mmss(s){s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
+  if(fb&&v){
+    v.addEventListener('loadedmetadata',function(){if(vt&&isFinite(v.duration))vt.textContent=mmss(v.duration);});
+    v.addEventListener('timeupdate',function(){
+      if(vf&&isFinite(v.duration)){vf.style.width=(v.currentTime/v.duration*100)+'%';}
+      if(vn)vn.textContent=mmss(v.currentTime);
+    });
+    if(vtr)vtr.addEventListener('click',function(e){
+      var r=vtr.getBoundingClientRect();
+      if(isFinite(v.duration))v.currentTime=Math.max(0,Math.min(v.duration,(e.clientX-r.left)/r.width*v.duration));
+    });
+    function soundOn(){v.muted=false;v.currentTime=0;v.loop=false;v.play();
+      if(ft)ft.textContent='tap to mute';if(bar)bar.classList.add('on');
+      if(window.__restartCarousel)window.__restartCarousel();}
+    function soundOff(){v.muted=true;v.loop=true;v.play();
+      if(ft)ft.textContent='tap for sound';if(bar)bar.classList.remove('on');}
+    fb.addEventListener('click',function(){ if(v.muted) soundOn(); else soundOff(); });
+    v.muted=false;
+    var p=v.play();
+    if(p&&p.catch)p.catch(function(){
+      v.muted=true;v.play().catch(function(){});
+      var unlock=function(e){
+        if(fb.contains(e.target))return;
+        document.removeEventListener('pointerdown',unlock,true);
+        soundOn();
+      };
+      document.addEventListener('pointerdown',unlock,true);
+    });
+    if(!(p&&p.catch)){if(ft)ft.textContent='tap to mute';if(bar)bar.classList.add('on');}
+  }
+  document.title=d.company+' — Outbound Readiness Score — HEDWIG';
 }
 
-(async () => {
-  if (!slug) { app.innerHTML = `<div class="err">No score requested. <a href="index.html">Back to HEDWIG</a></div>`; return; }
-  try {
-    const r = await fetch(BLOB + slug + ".json", {cache: "no-store"});
-    if (!r.ok) throw new Error(r.status);
-    render(await r.json());
-  } catch (e) {
-    app.innerHTML = `<div class="err">We couldn't find that score. <a href="index.html">Back to HEDWIG</a></div>`;
-  }
+(function(){
+  var slug=(new URLSearchParams(location.search).get('c')||'').trim().toLowerCase();
+  if(!/^[a-z0-9-]{1,64}$/.test(slug))return miss('This score link looks incomplete.');
+  var base=(document.querySelector('meta[name="blob-base"]')||{}).content||'';
+  fetch(base+'/scorecards/'+slug+'.json',{cache:'no-cache'})
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(render)
+    .catch(function(){miss('That score is not available.');});
 })();
 </script>
 </body>
