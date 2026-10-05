@@ -1,7 +1,7 @@
 """
-Outbound Readiness Score (HEDWIG) and legacy offer-review pipeline.
+Outbound Readiness Score (HEDWIG) and legacy review pipeline (old GTM Nerd campaigns).
 
-Ported from "GTM Consulting Campaign/SYSTEM/OFFER REVIEW SYSTEM/generate_reviews.py".
+Ported from the old GTM Nerd generate_reviews.py.
 This module scrapes a company site, extracts offer facts with Haiku, scores with
 Sonnet against the rubric, and returns the review JSON.
 
@@ -17,7 +17,7 @@ SONNET = "claude-sonnet-5"
 MAX_CHARS = 60_000
 MAX_PAGES = 5
 TIMEOUT = 15
-UA = "Mozilla/5.0 (compatible; offer-review/1.0; +https://fareehafatima.co)"
+UA = "Mozilla/5.0 (compatible; hedwig-ors/1.0; +https://fareehafatima.co)"
 
 CANDIDATE_PATHS = [
     "", "/pricing", "/plans", "/product", "/platform",
@@ -326,7 +326,7 @@ def generate_scorecard(domain: str, first_name: str = "", last_name: str = "",
 def generate_review(domain: str, first_name: str = "", last_name: str = "",
                    company: str = "") -> Dict[str, Any]:
     """
-    Generate an offer review for a company.
+    Legacy review (old rubric). New work uses generate_scorecard.
 
     Args:
         domain: Company domain to scrape

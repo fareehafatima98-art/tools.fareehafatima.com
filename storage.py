@@ -1,5 +1,5 @@
 """
-Vercel Blob storage for shareable kit pages + offer reviews + once-per-domain limiting.
+Vercel Blob storage for shareable kit pages + ORS scorecards + legacy reviews + once-per-domain limiting.
 
 Setup (one time, in Vercel dashboard):
   Project -> Storage -> Create -> Blob. Vercel auto-adds BLOB_READ_WRITE_TOKEN
@@ -9,7 +9,7 @@ Every generated kit is stored as kits/kit-<slug>.html at a public URL. That URL 
 the shareable link AND the cache: if a kit already exists for a domain, we serve the
 stored one instead of re-running (the once-per-domain limit, durable).
 
-Offer reviews are stored as reviews/<slug>.json (public). The recipient-facing page
+ORS scorecards are stored as scorecards/<slug>.json; legacy reviews as reviews/<slug>.json (public). The recipient-facing page
 at fareehafatima.co/review?c=<slug> tries local static files first, then falls back
 to the Blob URL, so portal-generated reviews are live instantly with no redeploy.
 

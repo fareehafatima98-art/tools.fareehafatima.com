@@ -18,8 +18,8 @@ PUBLIC ROUTES:
 TOOLS PORTAL (password-gated):
   GET  /login         -> login form
   POST /login         -> password check, sets auth cookie
-  GET  /tools         -> dashboard (Kit 25, Plan 90, Offer Review)
-  GET  /tools/review  -> Offer Review form
+  GET  /tools         -> dashboard (Kit 25, Plan 90, Outbound Readiness Score, Leads)
+  GET  /tools/review  -> legacy review form (old campaigns)
   POST /api/review    -> {domain, first_name, last_name, company, force} -> review JSON + URLs
 
 The API is split into analyze + per-prospect sequence + share so that NO single
@@ -236,7 +236,7 @@ async def login_submit(request: Request, password: str = Form(...)):
 
 @app.get("/tools", response_class=HTMLResponse)
 def tools_dashboard(request: Request):
-    """Dashboard with cards for Kit 25, Plan 90, and Offer Review."""
+    """Dashboard with cards for Kit 25, Plan 90, ORS, Leads."""
     if not _check_auth(request):
         return RedirectResponse("/login", status_code=302)
 
@@ -266,7 +266,7 @@ def scorecard_form(request: Request):
 
 @app.get("/tools/review", response_class=HTMLResponse)
 def review_form(request: Request):
-    """Offer Review tool form."""
+    """Legacy review form (old GTM Nerd campaigns). New work: /tools/scorecard."""
     if not _check_auth(request):
         return RedirectResponse("/login", status_code=302)
 
@@ -313,7 +313,7 @@ def generate_scorecard(request: Request, req: ReviewReq):
 
 @app.post("/api/review")
 def generate_offer_review(request: Request, req: ReviewReq):
-    """Generate an offer review (legacy GTM Nerd rubric). Auth required."""
+    """Legacy review (old GTM Nerd rubric). New work: /api/scorecard. Auth required."""
     if not _check_auth(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
 

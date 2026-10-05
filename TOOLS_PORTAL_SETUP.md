@@ -1,7 +1,7 @@
 # Tools Portal Setup Instructions
 
 ## Overview
-The tools portal is now implemented at `tools.fareehafatima.com` with password authentication, dashboard, and the Offer Review tool.
+The tools portal is now implemented at `tools.fareehafatima.com` with password authentication, dashboard, and the Outbound Readiness Score (ORS) tool.
 
 ## Required Environment Variables
 
@@ -42,11 +42,11 @@ Add a CNAME record:
 
 ### Protected (password-gated)
 - `/login` — Login form
-- `/tools` — Dashboard (Kit 25, Plan 90, Offer Review cards)
-- `/tools/review` — Offer Review form
+- `/tools` — Dashboard (Kit 25, Plan 90, ORS, Leads cards)
+- `/tools/scorecard` — ORS form (`/tools/review` is the legacy review form)
 - `/api/review` — Generate review (POST with auth check)
 
-## Offer Review Flow
+## ORS Flow
 
 1. User enters domain + optional name/company at `/tools/review`
 2. POST `/api/review` → scrapes up to 5 pages, Haiku extracts facts, Sonnet scores against rubric
@@ -76,7 +76,7 @@ After deploy with the env vars set:
 
 1. Visit `tools.fareehafatima.com` → should redirect to `/login`
 2. Enter password → should redirect to `/tools` dashboard
-3. Click "Offer Review" → should show form at `/tools/review`
+3. Click "Outbound Readiness Score" → should show form at `/tools/review`
 4. Generate a review for a test domain → should return JSON + URLs
 5. Visit the `page_url` → should render the review page
 6. Verify the Blob JSON URL is publicly accessible
