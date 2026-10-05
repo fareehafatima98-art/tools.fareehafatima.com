@@ -157,8 +157,8 @@ function render(d){
       '<h1>Hi '+esc(first)+', I ran '+esc(d.company)+' through our Outbound Readiness Score.</h1>'+
       '<p class="made" style="margin:0 0 14px">Made for '+esc(first)+'</p>'+
       '<div class="vframe">'+video+'</div><div class="vbar" id="vbar"><span id="vnow">0:00</span><div class="t" id="vtrack"><i id="vfill"></i></div><span id="vtot">&ndash;:&ndash;</span></div>'+
-      '<p class="sub" style="margin-top:16px">One minute on where '+esc(d.company)+'&rsquo;s outbound is ready and where it leaks, scored from your own site. This is the surface. The call goes under it.</p>'+
       '<div class="vcta"><a href="#book">Book a 30-minute outbound deep dive</a></div>'+
+      '<p class="kicker" style="text-align:center;margin-top:12px">A free teardown of your outbound campaigns</p>'+
     '</div>'+
 
     '<div class="section"><p class="made">The ten metrics</p>'+
@@ -171,9 +171,8 @@ function render(d){
 
     '<div class="ctaband" id="book">'+
       '<span class="pill">Book a 30-minute outbound deep dive</span>'+
-      '<h2>This score only touches the surface.</h2>'+
-      '<p>On the call we go into '+esc(d.company)+'&rsquo;s actual campaigns: who you are writing to, what you are sending, reply rates, deliverability, and where qualified conversations are leaking. You keep everything we find. If HEDWIG isn&rsquo;t a fit, I&rsquo;ll say so.</p>'+
-      '<p class="terms">30 minutes &middot; Bring your current campaign, or just your numbers.</p>'+
+      '<h2>These scores only scratch the surface of what your website shows.</h2>'+
+      '<p>If you want to go in depth on '+esc(d.company)+'&rsquo;s campaigns, book a free slot and let&rsquo;s tear them down together and find the gaps we can close.</p>'+
       '<div class="calwrap"><div class="calendly-inline-widget" data-url="'+esc(d.calendly||CALENDLY)+'?hide_gdpr_banner=1" style="min-width:320px;height:660px;"></div></div>'+
       '<div class="contact">Or just reply to my email, <a href="mailto:'+esc(EMAIL)+'">'+esc(EMAIL)+'</a></div>'+
     '</div>'+
