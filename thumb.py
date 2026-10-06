@@ -119,7 +119,8 @@ def compose(shot: Image.Image, first_name: str, last_name: str,
     nf = _font("DejaVuSerif-Bold.ttf", 44)
     sf = _font("DejaVuSans.ttf", 26)
     d.text((text_left, H - 118), name, font=nf, fill=(255, 255, 255))
-    d.text((text_left, H - 58), f"{company}  ·  {CAPTION_SUB}",
+    sub = CAPTION_SUB if who == company else f"{company}  ·  {CAPTION_SUB}"
+    d.text((text_left, H - 58), sub,
            font=sf, fill=(255, 255, 255, 235))
 
     out = io.BytesIO()
