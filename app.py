@@ -381,7 +381,7 @@ class ThumbReq(BaseModel):
 
 @app.post("/api/thumb")
 def generate_thumb(request: Request, req: ThumbReq):
-    """Generate both Offer Scorecard thumbnail variants for a prospect and
+    """Generate both ORS thumbnail variants for a prospect and
     store them in Blob. Auth required. Returns the /thumbs/ paths to embed:
     variant A (plain) = <slug>.jpg, variant B (face) = <slug>-face.jpg."""
     if not _check_auth(request):

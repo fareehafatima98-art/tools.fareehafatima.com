@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="robots" content="noindex"/>
-<title>Offer Scorecard Thumbnail — Tools Portal</title>
+<title>ORS Thumbnail — Tools Portal</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root{--ink:#111210;--paper:#f3f0e9;--acid:#d7ff3f;--signal:#ff5b36;--muted:#77766f;
@@ -57,9 +57,9 @@ button:disabled{opacity:.4;cursor:default}
 <body>
 <div class="wrap">
   <a href="/tools" class="back">← Back to tools</a>
-  <div class="eyebrow">Offer Scorecard Thumbnail</div>
+  <div class="eyebrow">ORS Thumbnail</div>
   <h1>Generate Email Thumbnail</h1>
-  <p class="sub">Builds the "paused video" card for a prospect: their homepage screenshot, play button, OFFER SCORECARD pill and "Prepared for &lt;name&gt;" caption. Two variants (plain and face bubble), stored at thumbs.fareehafatima.co. Embed the URL in the link email, wrapped in the review link.</p>
+  <p class="sub">Builds the "paused video" card for a prospect: their homepage screenshot, play button, OUTBOUND READINESS SCORE pill and "Prepared for &lt;name&gt;" caption. Two variants (plain and face bubble), stored at thumbs.fareehafatima.co. Embed the URL in step 2, wrapped in the scorecard link. Leave first name empty for a one-per-company card.</p>
 
   <div class="form">
     <div class="field">
@@ -142,7 +142,7 @@ function showResult(data) {
     </div>
     <div class="box">
       <h3>Slug</h3>
-      <p>${esc(data.slug)} — review page link should be /review?c=${esc(data.slug)}</p>
+      <p>${esc(data.slug)} — page link is https://hedwigandco.com/scorecard?c=${esc(data.slug)}&amp;n=FirstName</p>
     </div>`;
   document.getElementById('result').style.display = 'block';
 }
@@ -151,7 +151,7 @@ async function run() {
   const domain = document.getElementById('domain').value.trim();
   const first_name = document.getElementById('first_name').value.trim();
   if (!domain) { status('Domain is required', 'error'); return; }
-  if (!first_name) { status('First name is required (it goes on the card)', 'error'); return; }
+
 
   const last_name = document.getElementById('last_name').value.trim();
   const company = document.getElementById('company').value.trim();

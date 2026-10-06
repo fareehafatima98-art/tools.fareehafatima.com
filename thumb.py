@@ -1,8 +1,8 @@
 """
-Personalised email thumbnail generator ("Offer Scorecard" cards).
+Personalised email thumbnail generator (Outbound Readiness Score cards).
 
 For each prospect, builds a card that looks like a paused video of their own
-website: mShots screenshot backdrop, dark gradient, OFFER SCORECARD pill,
+website: mShots screenshot backdrop, dark gradient, OUTBOUND READINESS SCORE pill,
 centred play button, and "Prepared for <name> / <company> ..." caption.
 Variant A is clean; variant B adds Fareeha's face bubble (assets/face.jpg).
 
@@ -24,7 +24,7 @@ W, H = 1200, 750          # 2x of the 600x375 email display size
 JPEG_QUALITY = 82
 
 CAPTION_SUB = "1 min 11 sec  ·  two changes I’d test first"
-PILL_TEXT = "OFFER SCORECARD"
+PILL_TEXT = "OUTBOUND READINESS SCORE"
 
 def _font(name, size):
     return ImageFont.truetype(str(ASSETS / name), size)
@@ -114,7 +114,8 @@ def compose(shot: Image.Image, first_name: str, last_name: str,
         im.paste(face, (fx, fy), m)
 
     # caption
-    name = f"Prepared for {first_name} {last_name}".strip().rstrip(",")
+    who = f"{first_name} {last_name}".strip() or company
+    name = f"Prepared for {who}"
     nf = _font("DejaVuSerif-Bold.ttf", 44)
     sf = _font("DejaVuSans.ttf", 26)
     d.text((text_left, H - 118), name, font=nf, fill=(255, 255, 255))
