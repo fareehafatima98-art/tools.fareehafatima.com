@@ -185,7 +185,8 @@ function render(d){
 
   var slidesBox=document.getElementById('slides');
   if(slidesBox){
-    slidesBox.innerHTML=rows.map(function(r){
+    var order=high.concat(rows.map(function(r){return r.i;}).filter(function(i){return high.indexOf(i)<0&&low.indexOf(i)<0;}),low);
+    slidesBox.innerHTML=order.map(function(i){return rows[i];}).map(function(r){
       var cells='';for(var k=1;k<=5;k++)cells+='<i'+(k<=r.v?' class="f"':'')+'></i>';
       var n=notes[String(r.i+1)]||'';
       return '<div class="slide'+(low.indexOf(r.i)>-1?' low':'')+'"><div class="ix">'+('0'+(r.i+1)).slice(-2)+' / 10</div>'+
