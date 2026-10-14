@@ -14,6 +14,10 @@ Mark what you did:
   python3 linkedin_queue.py --accepted a@x.com
   python3 linkedin_queue.py --messaged a@x.com
   python3 linkedin_queue.py --skip a@x.com
+  python3 linkedin_queue.py --follow a@x.com      # no Connect button, you pressed Follow instead
+  python3 linkedin_queue.py --closed a@x.com      # no Connect and no Follow (locked profile)
+Followed and closed profiles come back into CONNECT after 14 days so you can re-check
+whether the button has appeared (it does, once you share more connections).
 Then rebuild the queue:
   python3 linkedin_queue.py --export ~/Downloads/leads.csv [--export another.csv] [--cap 20]
 """
@@ -39,7 +43,7 @@ def load_status():
     return st
 
 def save_status(st):
-    cols = ["email", "requested", "accepted", "messaged", "skipped", "note"]
+    cols = ["email", "requested", "accepted", "messaged", "skipped", "followed", "closed", "note"]
     with open(STATUS, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=cols); w.writeheader()
         for e in sorted(st): w.writerow({c: st[e].get(c, "") for c in cols})
@@ -95,29 +99,39 @@ def build(exports, cap, sept):
             dm = (DM_SEPT if sept else DM_NEW).format(first=r["first"], company=r["company"], total=r["total"])
             message.append({**r, "dm": dm}); continue
         if s.get("requested"): continue
+        blocked = s.get("followed") or s.get("closed")
+        if blocked:
+            try: since = datetime.strptime(blocked, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            except Exception: since = now
+            if (now - since) < timedelta(days=14): continue
+            r = {**r, "recheck": "followed on " + blocked if s.get("followed") else "closed on " + blocked}
         if r["last"] and (now - r["last"]) >= timedelta(days=1):
             connect.append(r)
     connect.sort(key=lambda r: (-(r["clicks"] * 10 + r["opens"]), r["last"] or now))
     connect = connect[:cap]
     with open(OUT, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["section", "email", "first", "last", "company", "title", "linkedin", "opens", "clicks", "ors_total", "scorecard_url", "what the email said", "dm_to_paste"])
+        w.writerow(["section", "email", "first", "last", "company", "title", "linkedin", "opens", "clicks", "ors_total", "scorecard_url", "what the email said", "dm_to_paste", "recheck"])
         for r in connect:
-            w.writerow(["CONNECT", r["email"], r["first"], r["lastname"], r["company"], r["title"], r["linkedin"], r["opens"], r["clicks"], r["total"], r["scorecard"], r["opener"], ""])
+            w.writerow(["CONNECT", r["email"], r["first"], r["lastname"], r["company"], r["title"], r["linkedin"], r["opens"], r["clicks"], r["total"], r["scorecard"], r["opener"], "", r.get("recheck", "")])
         for r in message:
-            w.writerow(["MESSAGE", r["email"], r["first"], r["lastname"], r["company"], r["title"], r["linkedin"], r["opens"], r["clicks"], r["total"], r["scorecard"], r["opener"], r["dm"]])
-    print(f"CONNECT {len(connect)} (cap {cap})  MESSAGE {len(message)}  no linkedin url: {missing}\n-> {OUT}")
+            w.writerow(["MESSAGE", r["email"], r["first"], r["lastname"], r["company"], r["title"], r["linkedin"], r["opens"], r["clicks"], r["total"], r["scorecard"], r["opener"], r["dm"], ""])
+    fol = sum(1 for v in st.values() if v.get("followed") and not v.get("accepted")); clo = sum(1 for v in st.values() if v.get("closed"))
+    req = sum(1 for v in st.values() if v.get("requested") and not v.get("accepted"))
+    acc = sum(1 for v in st.values() if v.get("accepted"))
+    print(f"CONNECT {len(connect)} (cap {cap})  MESSAGE {len(message)}  no linkedin url: {missing}")
+    print(f"so far: requested {req} pending, accepted {acc}, followed {fol}, closed {clo}\n-> {OUT}")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--export", action="append", default=[], help="Instantly lead export CSV (repeatable)")
     ap.add_argument("--cap", type=int, default=20)
     ap.add_argument("--sept", action="store_true", help="use the September engaged-leads DM text")
-    for f in ("requested", "accepted", "messaged", "skip"):
+    for f in ("requested", "accepted", "messaged", "skip", "follow", "closed"):
         ap.add_argument(f"--{f}", nargs="*", default=None)
     a = ap.parse_args()
     st = load_status(); did = False
-    for f, field in (("requested", "requested"), ("accepted", "accepted"), ("messaged", "messaged"), ("skip", "skipped")):
+    for f, field in (("requested", "requested"), ("accepted", "accepted"), ("messaged", "messaged"), ("skip", "skipped"), ("follow", "followed"), ("closed", "closed")):
         v = getattr(a, f)
         if v: mark(st, v, field); did = True
     if a.export: build(a.export, a.cap, a.sept)
