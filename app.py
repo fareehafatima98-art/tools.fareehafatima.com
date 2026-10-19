@@ -35,7 +35,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, Request, Form, Cookie
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from pydantic import BaseModel
-import capture, storage, report_html, auth, review, leads
+import capture, storage, report_html, auth, review, leads, scout
 
 HERE = pathlib.Path(__file__).resolve().parent
 app = FastAPI(title="ICP Capture Kit")
@@ -529,3 +529,33 @@ def leads_csv(request: Request, client: str = "hedwig"):
     doc = leads.load(client)
     return Response(leads.to_csv(doc), media_type="text/csv",
                     headers={"Content-Disposition": f'attachment; filename="{client}-leads.csv"', "Cache-Control": "no-store"})
+
+
+# ---------------------------------------------------------------- Scout (lead builder agent)
+
+@app.get("/tools/scout", response_class=HTMLResponse)
+def scout_page(request: Request):
+    if not _check_auth(request):
+        return RedirectResponse("/login", status_code=302)
+    html = (HERE / "web" / "tools" / "scout.html").read_text(encoding="utf-8")
+    return HTMLResponse(html, headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
+@app.post("/api/scout/search")
+async def scout_search(request: Request):
+    if (r := _auth_or_401(request)): return r
+    q = await request.json()
+    res = scout.search(q, exclude_domains=q.get("exclude_domains") or [])
+    return JSONResponse(res, status_code=200 if not res.get("error") else 502)
+
+@app.post("/api/scout/verify")
+async def scout_verify(request: Request):
+    if (r := _auth_or_401(request)): return r
+    body = await request.json()
+    return JSONResponse(scout.verify(body.get("ids") or []))
+
+@app.post("/api/scout/csv")
+async def scout_csv(request: Request):
+    if (r := _auth_or_401(request)): return r
+    body = await request.json()
+    return Response(scout.to_csv(body.get("people") or []), media_type="text/csv",
+                    headers={"Content-Disposition": 'attachment; filename="scout-leads.csv"', "Cache-Control": "no-store"})

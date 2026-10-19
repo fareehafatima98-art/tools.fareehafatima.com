@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scout · Hedwig &amp; Co</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#0f1230;--bg2:#131740;--panel:#181d4a;--panel2:#1d2355;--line:#2a3070;--ink:#eef0fb;--muted:#9aa2d1;--gold:#d4a35a;--gold2:#e4bb7a;--ok:#6fcf97;--warn:#f2c94c;--bad:#eb5757}
+*{box-sizing:border-box}html,body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#20296b 0%,var(--bg) 55%);color:var(--ink);font:14px/1.5 Inter,-apple-system,Segoe UI,Helvetica,Arial,sans-serif;min-height:100%}
+a{color:var(--gold2)}
+header{display:flex;align-items:center;gap:14px;padding:18px 32px;border-bottom:1px solid var(--line)}
+header .brand{font:500 22px Fraunces,Georgia,serif;letter-spacing:-.01em}header .brand b{color:var(--gold);font-weight:500}
+header .crumb{font:500 11px JetBrains Mono,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+header .sp{flex:1}header nav a{font:500 11px JetBrains Mono,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-decoration:none;margin-left:18px}header nav a.on,header nav a:hover{color:var(--ink)}
+.kicker{font:500 11px JetBrains Mono,monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px}.kicker:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold)}
+h1{font:400 40px/1.05 Fraunces,Georgia,serif;letter-spacing:-.02em;margin:10px 0 6px}h1 em{font-style:italic;color:var(--gold)}
+.sub{color:var(--muted);max-width:720px;margin:0 0 26px}
+main{padding:30px 32px 80px;max-width:1500px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.panel h3{font:400 20px Fraunces,Georgia,serif;margin:0 0 14px}
+label{display:block;font:500 10.5px JetBrains Mono,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+textarea{min-height:60px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 12px Inter;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);color:var(--muted);cursor:pointer;user-select:none}
+.chip.on{border-color:var(--gold);color:var(--ink);background:rgba(212,163,90,.12)}
+.btn{font:600 13px Inter;padding:11px 16px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#1a1405}.btn.gold:hover{background:var(--gold2)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.kpi b{display:block;font:400 34px/1 Fraunces,Georgia,serif;color:var(--gold)}.kpi span{font:500 10.5px JetBrains Mono,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.log{font:12px JetBrains Mono,monospace;color:var(--muted);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-height:64px;white-space:pre-wrap;margin-bottom:16px}
+.log .t{color:var(--gold)}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13px}
+th{font:500 10.5px JetBrains Mono,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:var(--bg2);position:sticky;top:0}
+tr:hover td{background:var(--panel2)}
+td a{color:var(--gold2);text-decoration:none}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font:500 11px JetBrains Mono,monospace;letter-spacing:.06em;background:var(--bg2);border:1px solid var(--line);color:var(--muted)}
+.pill.ok{color:var(--ok);border-color:rgba(111,207,151,.4)}.pill.warn{color:var(--warn);border-color:rgba(242,201,76,.4)}
+.empty{padding:50px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+.empty h4{font:400 24px Fraunces,Georgia,serif;color:var(--ink);margin:0 0 6px}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body>
+<header>
+  <div class="brand">Hedwig <b>&amp;</b> Co</div>
+  <div class="crumb">/ agents / scout</div>
+  <div class="sp"></div>
+  <nav><a href="/tools/scout" class="on">Scout</a><a href="/tools/scorecard">Beacon</a><a href="/tools/leads">Workspace</a><a href="/tools">All tools</a></nav>
+</header>
+<main>
+  <div class="kicker">Scout · lead builder</div>
+  <h1>Who should a doctor be writing to <em>this week?</em></h1>
+  <p class="sub">Describe the buyer. Scout pulls them from Apollo by role, company size and live signal, drops anyone already in a campaign, and verifies emails before a single one is allowed into a sequence.</p>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>The buyer</h3>
+      <label>Roles</label>
+      <input id="titles" value="Founder, CEO, Co-Founder, Chief Executive Officer" placeholder="comma separated">
+      <label>Company size</label>
+      <div class="chips" id="sizes">
+        <span class="chip on" data-v="11-50">11 to 50</span><span class="chip on" data-v="51-200">51 to 200</span><span class="chip" data-v="201-500">201 to 500</span>
+      </div>
+      <label>Company keywords</label>
+      <input id="keywords" value="health tech, digital health, medical device, healthcare software" placeholder="comma separated">
+      <label>Company HQ</label>
+      <input id="locations" value="United States" placeholder="United States, United Kingdom">
+      <label>Live signal</label>
+      <select id="signal">
+        <option value="">None</option>
+        <option value="hiring_sales" selected>Hiring sales, BD, growth or marketing (last 90 days)</option>
+        <option value="hiring_clinical">Hiring clinical roles (last 90 days)</option>
+        <option value="funded">Funded in the last 12 months</option>
+      </select>
+      <label>Exclude domains (already in a campaign)</label>
+      <textarea id="exclude" placeholder="one per line or comma separated"></textarea>
+      <label>How many</label>
+      <select id="limit"><option value="100">Up to 100</option><option value="250">Up to 250</option><option value="500">Up to 500</option></select>
+      <div class="row" style="margin-top:18px">
+        <button class="btn gold" id="run">Run Scout</button>
+        <button class="btn" id="csv" disabled>Download CSV</button>
+      </div>
+      <p class="note">Search costs nothing. Verify reveals full names and verified emails at 1 credit per person, capped at 8 per click.</p>
+    </div>
+
+    <div>
+      <div class="kpis">
+        <div class="kpi"><b id="k_total">0</b><span>match the brief</span></div>
+        <div class="kpi"><b id="k_returned">0</b><span>pulled this run</span></div>
+        <div class="kpi"><b id="k_companies">0</b><span>companies</span></div>
+        <div class="kpi"><b id="k_verified">0</b><span>verified emails</span></div>
+      </div>
+      <div class="log" id="log">Scout is idle.</div>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn" id="verify" disabled>Verify next 8</button>
+        <span class="note" id="sel"></span>
+      </div>
+      <div id="results"><div class="empty"><h4>No list yet.</h4>Set the brief on the left and run Scout.</div></div>
+    </div>
+  </div>
+</main>
+<script>
+const $=s=>document.querySelector(s);let people=[],t0=0;
+document.querySelectorAll('#sizes .chip').forEach(c=>c.onclick=()=>c.classList.toggle('on'));
+const split=v=>v.split(/[,\n]/).map(x=>x.trim()).filter(Boolean);
+function log(m,gold){const el=$('#log');const t=((Date.now()-t0)/1000).toFixed(1);el.innerHTML+=`\n<span class="t">${t}s</span>  ${m}`;el.scrollTop=el.scrollHeight}
+function render(){
+  if(!people.length){$('#results').innerHTML='<div class="empty"><h4>Nothing came back.</h4>Loosen a filter and run again.</div>';return}
+  const rows=people.map((p,i)=>`<tr><td>${i+1}</td><td>${p.first_name} ${p.last_name||''}</td><td>${p.title}</td><td>${p.company}<br><span class="note">${p.domain}</span></td><td>${p.employees||''}</td><td>${[p.city,p.state,p.country].filter(Boolean).join(', ')}</td><td>${p.email?p.email:'<span class="pill">hidden</span>'}</td><td>${p.verified?'<span class="pill ok">verified</span>':'<span class="pill warn">unverified</span>'}</td><td>${p.linkedin?`<a href="${p.linkedin}" target="_blank">profile</a>`:''}</td></tr>`).join('');
+  $('#results').innerHTML=`<table><thead><tr><th>#</th><th>Name</th><th>Title</th><th>Company</th><th>Size</th><th>Location</th><th>Email</th><th>Status</th><th>LinkedIn</th></tr></thead><tbody>${rows}</tbody></table>`;
+  $('#k_returned').textContent=people.length;$('#k_companies').textContent=new Set(people.map(p=>p.domain||p.company)).size;$('#k_verified').textContent=people.filter(p=>p.verified).length;
+  $('#csv').disabled=!people.length;$('#verify').disabled=!people.some(p=>!p.verified);
+  $('#sel').textContent=`${people.filter(p=>!p.verified).length} still to verify`;
+}
+$('#run').onclick=async()=>{
+  t0=Date.now();$('#log').innerHTML='';$('#run').disabled=true;people=[];
+  const q={titles:split($('#titles').value),sizes:[...document.querySelectorAll('#sizes .chip.on')].map(c=>c.dataset.v),keywords:split($('#keywords').value),locations:split($('#locations').value),signal:$('#signal').value,exclude_domains:split($('#exclude').value),limit:+$('#limit').value};
+  log(`Brief: ${q.titles.length} roles, ${q.sizes.join('/')} people, ${q.locations.join(', ')}${q.signal?', signal '+q.signal:''}`);
+  log('Asking Apollo (search is free)…');
+  try{const r=await fetch('/api/scout/search',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(q)});const j=await r.json();
+    if(j.error){log('Apollo said: '+j.error);} else {people=j.people;$('#k_total').textContent=(j.total||0).toLocaleString();log(`${(j.total||0).toLocaleString()} people match. Pulled ${j.returned} across ${j.companies} companies.`);if(q.exclude_domains.length)log(`Dropped anyone at ${q.exclude_domains.length} excluded domains.`);log('Emails stay hidden until verified. Click Verify to reveal the next 8.',1);}
+  }catch(e){log('Failed: '+e)}
+  $('#run').disabled=false;render();
+};
+$('#verify').onclick=async()=>{
+  const ids=people.filter(p=>!p.verified).slice(0,8).map(p=>p.id);$('#verify').disabled=true;log(`Verifying ${ids.length} people (${ids.length} credits)…`);
+  try{const r=await fetch('/api/scout/verify',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({ids})});const j=await r.json();
+    if(j.error){log(j.error)}else{let n=0;for(const m of j.people){const p=people.find(x=>(x.linkedin&&x.linkedin===m.linkedin_url)||(x.first_name===m.first_name&&x.company===m.company));if(p){p.email=m.email||'';p.email_status=m.email_status||'';p.last_name=p.last_name||(m.name||'').split(' ').slice(1).join(' ');p.verified=!!m.email&&m.email_status==='verified';if(p.verified)n++}}
+      log(`${n} verified emails revealed, ${j.people.length-n} came back unverified and stay out of the campaign.`)}
+  }catch(e){log('Failed: '+e)}
+  render();
+};
+$('#csv').onclick=async()=>{const r=await fetch('/api/scout/csv',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({people:people.filter(p=>p.verified)})});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='scout-leads.csv';a.click();log(`CSV with ${people.filter(p=>p.verified).length} verified leads, in Instantly's column order.`)};
+</script>
+</body></html>
